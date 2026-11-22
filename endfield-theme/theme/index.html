@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZCODE // 终末地工业主题</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>
+/* 异步加载字体，不阻塞渲染与 load 事件；失败时回退系统字体 */
+window.addEventListener('DOMContentLoaded',function(){
+  var f=document.createElement('link');f.rel='stylesheet';
+  f.href='https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&family=Noto+Sans+SC:wght@400;500;700;900&display=swap';
+  document.head.appendChild(f);
+});
+</script>
+<style>
+/* ============================================================
+   ZCODE INDUSTRIAL THEME — Endfield-inspired
+   终末地工业风格主题 · ES-2101
+   ============================================================ */
+:root{
+  --bg-0:#0b0c0e;
+  --bg-1:#121417;
+  --bg-2:#1a1d22;
+  --panel:#eceae4;          /* 终末地式浅色面板 */
+  --panel-2:#dfddd5;
+  --panel-dark:#22262c;
+  --ink:#17181b;            /* 浅面板上的深色文字 */
+  --fg:#d9d7d1;
+  --fg-dim:#8b8e95;
+  --accent:#ff9e1b;         /* 终末地工业橙 */
+  --accent-2:#ffb84d;
+  --accent-dim:rgba(255,158,27,.14);
+  --danger:#e5484d;
+  --ok:#43c268;
+  --warn:#ffc53d;
+  --line:#2c3037;
+  --line-2:#3a3f47;
+  --mono:'Share Tech Mono','Consolas','Courier New',monospace;
+  --sans:'Rajdhani','Noto Sans SC','Microsoft YaHei',sans-serif;
+  --cut:12px;
+}
+body.alert-mode{ --accent:#ff5147; --accent-2:#ff7a6e; --accent-dim:rgba(255,81,71,.14); }
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--bg-0);
+  color:var(--fg);
+  font-family:var(--sans);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--accent);color:#141414}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+
+/* ---------- 通用装饰 ---------- */
+.grid-bg{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.032) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.032) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.vignette{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 40%,transparent 40%,rgba(0,0,0,.55) 100%);}
+.noise{position:absolute;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");}
+.scanlines{position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.14) 3px 4px);}
+.hazard{
+  background:repeating-linear-gradient(-45deg,var(--accent) 0 12px,#141414 12px 24px);
+}
+.hazard-thin{height:6px;width:100%}
+
+/* 切角面板 */
+.cut{clip-path:polygon(var(--cut) 0,100% 0,100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,0 100%,0 var(--cut));}
+.cut-sm{--cut:8px;}
+
+/* 角标十字 */
+.tick-cross{position:relative}
+.tick-cross::before,.tick-cross::after{
+  content:"";position:absolute;width:14px;height:14px;pointer-events:none;
+  background:
+    linear-gradient(var(--accent),var(--accent)) center/100% 1.5px no-repeat,
+    linear-gradient(var(--accent),var(--accent)) center/1.5px 100% no-repeat;
+}
+.tick-cross::before{top:-7px;left:-7px}
+.tick-cross::after{bottom:-7px;right:-7px}
+
+/* 眉标 */
+.eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.35em;
+  color:var(--accent);text-transform:uppercase;display:flex;align-items:center;gap:10px;
+}
+.eyebrow::before{content:"";width:22px;height:1.5px;background:var(--accent)}
+
+.blink{animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- 屏幕切换 ---------- */
+.screen{position:fixed;inset:0;display:none}
+.screen.active{display:block;animation:screenIn .5s ease both}
+@keyframes screenIn{from{opacity:0}to{opacity:1}}
+
+/* ============================================================
+   阶段一 · 开屏启动 BOOT
+   ============================================================ */
+#boot{background:var(--bg-0);z-index:100}
+.boot-inner{
+  position:relative;height:100%;max-width:880px;margin:0 auto;
+  display:flex;flex-direction:column;justify-content:center;padding:32px;
+}
+.boot-head{
+  display:flex;justify-content:space-between;font-family:var(--mono);
+  font-size:11px;letter-spacing:.3em;color:var(--fg-dim);
+  border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:26px;
+}
+.boot-head b{color:var(--accent);font-weight:400}
+.boot-log{
+  font-family:var(--mono);font-size:13px;line-height:2.05;min-height:300px;
+  color:#a7abb3;
+}
+.boot-log .ln{opacity:0;animation:lnIn .18s ease forwards}
+@keyframes lnIn{to{opacity:1}}
+.boot-log .ok{color:var(--ok)}
+.boot-log .warn{color:var(--warn)}
+.boot-log .acc{color:var(--accent)}
+.boot-bar-wrap{display:flex;align-items:center;gap:14px;margin-top:26px}
+.boot-bar{
+  flex:1;height:10px;background:var(--bg-2);border:1px solid var(--line);
+  position:relative;overflow:hidden;
+}
+.boot-bar i{
+  display:block;height:100%;width:0%;
+  background:linear-gradient(90deg,var(--accent) 0%,var(--accent-2) 100%);
+  box-shadow:0 0 12px rgba(255,158,27,.5);
+}
+.boot-bar em{ /* 条纹滚动层 */
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(-45deg,rgba(0,0,0,.22) 0 8px,transparent 8px 16px);
+  animation:stripeMove 1s linear infinite;
+}
+@keyframes stripeMove{to{background-position:22.6px 0}}
+.boot-pct{font-family:var(--mono);font-size:14px;color:var(--accent);min-width:52px;text-align:right}
+
+.boot-logo{
+  display:none;flex-direction:column;align-items:center;gap:18px;margin-top:8px;
+}
+.boot-logo.show{display:flex;animation:logoStamp .55s cubic-bezier(.2,1.4,.3,1) both}
+@keyframes logoStamp{
+  0%{transform:scale(1.6);opacity:0;filter:brightness(3)}
+  60%{transform:scale(.98);opacity:1;filter:brightness(1.6)}
+  100%{transform:scale(1);filter:brightness(1)}
+}
+.logo-badge{
+  width:120px;height:120px;background:var(--panel);color:var(--ink);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:64px;font-family:var(--sans);
+  clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);
+  position:relative;box-shadow:0 0 60px rgba(255,158,27,.25);
+}
+.logo-badge::after{
+  content:"";position:absolute;right:0;top:0;width:26px;height:26px;
+  background:linear-gradient(225deg,var(--accent) 50%,transparent 50%);
+}
+.logo-word{
+  font-size:44px;font-weight:700;letter-spacing:.34em;color:var(--fg);
+  text-indent:.34em;
+}
+.logo-sub{
+  font-family:var(--mono);font-size:11px;letter-spacing:.5em;color:var(--accent);
+  text-indent:.5em;
+}
+.boot-skip{
+  position:absolute;right:32px;bottom:26px;background:none;border:1px solid var(--line-2);
+  color:var(--fg-dim);font-family:var(--mono);font-size:11px;letter-spacing:.25em;
+  padding:8px 16px;transition:.2s;
+}
+.boot-skip:hover{border-color:var(--accent);color:var(--accent)}
+#boot.glitch-out{animation:glitchOut .5s steps(6) forwards}
+@keyframes glitchOut{
+  0%{clip-path:inset(0);transform:translateX(0);opacity:1}
+  20%{clip-path:inset(12% 0 62% 0);transform:translateX(-16px)}
+  40%{clip-path:inset(58% 0 8% 0);transform:translateX(14px)}
+  60%{clip-path:inset(30% 0 44% 0);transform:translateX(-8px);opacity:.85}
+  80%{clip-path:inset(70% 0 6% 0);transform:translateX(10px);opacity:.5}
+  100%{clip-path:inset(50% 0 50% 0);transform:translateX(0);opacity:0}
+}
+
+/* ============================================================
+   阶段二 · 授权访问 AUTH
+   ============================================================ */
+#auth{background:radial-gradient(90% 70% at 50% 30%,#171a1f 0%,var(--bg-0) 70%)}
+.auth-floor{
+  position:absolute;left:-15%;right:-15%;bottom:-4%;height:42%;
+  background:
+    linear-gradient(rgba(255,158,27,.10) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,158,27,.10) 1px,transparent 1px);
+  background-size:64px 64px;
+  transform:perspective(520px) rotateX(62deg);
+  transform-origin:50% 100%;
+  mask-image:linear-gradient(transparent,black 55%);
+  -webkit-mask-image:linear-gradient(transparent,black 55%);
+  animation:floorFlow 5s linear infinite;
+}
+@keyframes floorFlow{to{background-position:0 64px,0 0}}
+.auth-wrap{position:relative;height:100%;display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-card{
+  width:min(430px,94vw);background:var(--panel);color:var(--ink);
+  clip-path:polygon(20px 0,100% 0,100% calc(100% - 20px),calc(100% - 20px) 100%,0 100%,0 20px);
+  animation:cardUp .6s cubic-bezier(.2,1,.3,1) both;
+  position:relative;
+}
+@keyframes cardUp{from{transform:translateY(36px);opacity:0}to{transform:none;opacity:1}}
+.auth-card .stripe{height:10px}
+.ac-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:18px 22px 14px;border-bottom:1px solid #cfccc3;
+}
+.ac-title{font-size:19px;font-weight:900;letter-spacing:.14em}
+.ac-title small{display:block;font-family:var(--mono);font-weight:400;font-size:10px;
+  letter-spacing:.4em;color:#8a877e;margin-top:3px}
+.ac-status{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.2em;color:#6f6c64}
+.dot{width:8px;height:8px;background:var(--ok);border-radius:50%;
+  box-shadow:0 0 8px var(--ok);animation:blink 1.6s steps(1) infinite}
+.ac-ident{display:flex;gap:14px;align-items:center;padding:18px 22px}
+.ac-avatar{
+  width:58px;height:58px;flex:none;background:#17181b;color:var(--accent);
+  display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;
+  clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
+}
+.ac-name{font-size:17px;font-weight:700;letter-spacing:.1em}
+.ac-meta{font-family:var(--mono);font-size:11px;color:#77746b;margin-top:5px;line-height:1.7}
+.ac-meta b{color:var(--ink);font-weight:400}
+.ac-clear{display:inline-block;margin-top:6px;background:var(--ink);color:var(--panel);
+  font-family:var(--mono);font-size:10px;letter-spacing:.25em;padding:2px 8px}
+.ac-hold{
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  padding:10px 22px 24px;
+}
+.hold-btn{
+  width:148px;height:148px;border-radius:50%;background:transparent;border:none;
+  position:relative;display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;touch-action:none;
+}
+.hold-btn svg.ring{position:absolute;inset:0;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:#d4d1c7;stroke-width:5}
+.ring-fill{fill:none;stroke:var(--accent);stroke-width:5;stroke-linecap:butt;
+  stroke-dasharray:326.73;stroke-dashoffset:326.73;
+  filter:drop-shadow(0 0 6px rgba(255,158,27,.55))}
+.hold-core{
+  width:112px;height:112px;border-radius:50%;background:#17181b;color:var(--accent);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  position:relative;overflow:hidden;transition:transform .15s;
+}
+.hold-btn:active .hold-core{transform:scale(.96)}
+.hold-core .fp{width:34px;height:34px;stroke:var(--accent);fill:none;stroke-width:2.4;stroke-linecap:round}
+.hold-core .pct{font-family:var(--mono);font-size:15px;color:var(--fg)}
+.hold-btn.scanning .hold-core::after{
+  content:"";position:absolute;left:0;right:0;height:26%;
+  background:linear-gradient(180deg,transparent,rgba(255,158,27,.45));
+  animation:scanY 0.8s ease-in-out infinite alternate;
+}
+@keyframes scanY{from{top:-30%}to{top:105%}}
+.hold-btn.granted .ring-fill{stroke:var(--ok);filter:drop-shadow(0 0 8px rgba(67,194,104,.6))}
+.hold-btn.granted .hold-core .fp{stroke:var(--ok)}
+.hold-label{font-size:15px;font-weight:700;letter-spacing:.35em;text-indent:.35em}
+.hold-hint{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:#8a877e}
+.verify{
+  border-top:1px dashed #cfccc3;margin:0 22px;padding:14px 0 18px;
+  font-family:var(--mono);font-size:12px;line-height:2;color:#55524a;display:none;
+}
+.verify.show{display:block}
+.verify .ln{opacity:0;animation:lnIn .18s ease forwards}
+.verify .ok{color:#1d7f42}
+.verify .tok{color:#a06a00;user-select:all}
+.ac-foot{
+  padding:0 22px 20px;font-family:var(--mono);font-size:10px;color:#9b988e;
+  letter-spacing:.12em;display:flex;align-items:center;gap:8px;
+}
+.ac-foot .w{width:10px;height:10px;flex:none;background:
+  conic-gradient(#b5b2a8 0 25%,transparent 0 50%,#b5b2a8 0 75%,transparent 0);}
+.auth-corner{
+  position:fixed;font-family:var(--mono);font-size:10px;letter-spacing:.3em;
+  color:var(--fg-dim);z-index:5;
+}
+.auth-corner.tl{top:22px;left:26px}.auth-corner.tr{top:22px;right:26px;text-align:right}
+.auth-corner.bl{bottom:22px;left:26px}.auth-corner.br{bottom:22px;right:26px;text-align:right}
+.auth-corner b{color:var(--accent);font-weight:400}
+
+/* ============================================================
+   阶段三 · 主界面 MAIN
+   ============================================================ */
+#main{background:var(--bg-1);overflow-y:auto;overflow-x:hidden}
+.topbar{
+  position:sticky;top:0;z-index:50;background:rgba(18,20,23,.92);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+}
+.topbar-in{
+  max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:26px;
+  padding:0 24px;height:62px;
+}
+.tb-logo{display:flex;align-items:center;gap:12px;flex:none}
+.tb-mark{
+  width:34px;height:34px;background:var(--panel);color:var(--ink);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:19px;
+  clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px);
+}
+.tb-mark::after{content:"";position:absolute}
+.tb-name{font-size:17px;font-weight:700;letter-spacing:.22em}
+.tb-name small{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.42em;
+  color:var(--fg-dim);font-weight:400;margin-top:1px}
+.nav{display:flex;gap:4px;flex:1;justify-content:center}
+.nav-btn{
+  background:none;border:none;color:var(--fg-dim);font-size:14px;font-weight:600;
+  letter-spacing:.18em;padding:8px 16px;position:relative;transition:color .2s;
+}
+.nav-btn small{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.3em;
+  font-weight:400;margin-top:2px;opacity:.75}
+.nav-btn:hover{color:var(--fg)}
+.nav-btn.on{color:var(--accent)}
+.nav-btn.on::after{content:"";position:absolute;left:14px;right:14px;bottom:2px;height:2px;background:var(--accent)}
+.tb-right{display:flex;align-items:center;gap:16px;flex:none}
+.tb-clock{text-align:right;font-family:var(--mono);line-height:1.5}
+.tb-clock .t{font-size:15px;color:var(--fg)}
+.tb-clock .d{font-size:9.5px;color:var(--fg-dim);letter-spacing:.15em}
+.snd-btn{
+  width:34px;height:34px;background:var(--bg-2);border:1px solid var(--line-2);color:var(--fg-dim);
+  display:flex;align-items:center;justify-content:center;transition:.2s;
+}
+.snd-btn:hover{border-color:var(--accent);color:var(--accent)}
+.snd-btn svg{width:16px;height:16px;fill:currentColor}
+.auth-badge{
+  font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ok);
+  border:1px solid rgba(67,194,104,.4);padding:5px 10px;display:flex;gap:7px;align-items:center;
+}
+.auth-badge i{width:6px;height:6px;background:var(--ok);border-radius:50%;box-shadow:0 0 6px var(--ok)}
+
+/* 数据 ticker */
+.ticker{
+  border-bottom:1px solid var(--line);background:var(--bg-0);overflow:hidden;
+  font-family:var(--mono);font-size:10.5px;color:var(--fg-dim);letter-spacing:.08em;
+}
+.ticker-track{display:inline-flex;gap:44px;white-space:nowrap;padding:7px 0;
+  animation:tick 36s linear infinite;will-change:transform}
+.ticker b{color:var(--accent);font-weight:400}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+/* 主体 */
+.stage{max-width:1280px;margin:0 auto;padding:34px 24px 60px}
+.tab-panel{display:none}
+.tab-panel.on{display:block}
+.reveal{opacity:0;transform:translateY(22px)}
+.reveal.in{opacity:1;transform:none;transition:opacity .6s ease,transform .6s cubic-bezier(.2,1,.3,1)}
+
+/* —— 概览 —— */
+.hero{
+  background:var(--panel);color:var(--ink);padding:40px 42px;
+  clip-path:polygon(26px 0,100% 0,100% calc(100% - 26px),calc(100% - 26px) 100%,0 100%,0 26px);
+  display:flex;justify-content:space-between;gap:30px;position:relative;margin-bottom:26px;
+}
+.hero::before{
+  content:"";position:absolute;top:0;right:0;width:110px;height:110px;
+  background:linear-gradient(225deg,var(--accent) 46%,transparent 46.5%);
+  clip-path:polygon(100% 0,100% 100%,0 0);
+}
+.hero-copy{max-width:600px}
+.hero-copy .eyebrow{color:#a06a00}
+.hero-copy .eyebrow::before{background:#a06a00}
+.hero-copy .eyebrow::after{content:"ES-2101 / INDUSTRIAL";margin-left:6px;opacity:.6}
+.hero h1{font-size:clamp(34px,5vw,56px);font-weight:900;letter-spacing:.06em;line-height:1.12;margin:16px 0 12px}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,#c47a00,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{font-size:14.5px;line-height:1.9;color:#57544c;max-width:520px}
+.hero-btns{display:flex;gap:14px;margin-top:24px;flex-wrap:wrap}
+/* 浅色面板上的幽灵按钮需要深色文字 */
+.hero .btn-ghost{color:var(--ink);box-shadow:inset 0 0 0 1px #b5b2a8}
+.hero .btn-ghost:hover{color:#a06a00;box-shadow:inset 0 0 0 1px #a06a00}
+.hero-visual{flex:none;align-self:center;position:relative;width:190px;height:190px;display:grid;place-items:center}
+.hero-ring{position:absolute;inset:0;border:1.5px dashed #c9c6bb;border-radius:50%;animation:spin 22s linear infinite}
+.hero-ring2{position:absolute;inset:22px;border:1px solid #d8d5cb;
+  background:repeating-conic-gradient(#d8d5cb 0 1deg,transparent 1deg 16deg);
+  border-radius:50%;animation:spin 9s linear infinite reverse;opacity:.8}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero-core{
+  width:104px;height:104px;background:var(--ink);color:var(--accent);
+  display:grid;place-items:center;font-size:52px;font-weight:700;
+  clip-path:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px);
+  box-shadow:0 0 44px rgba(255,158,27,.3);
+}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:26px}
+.stat{
+  background:var(--panel-dark);border:1px solid var(--line);padding:20px 22px;
+  clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
+  position:relative;transition:border-color .25s;
+}
+.stat:hover{border-color:var(--accent)}
+.stat .k{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--fg-dim)}
+.stat .v{font-size:34px;font-weight:700;margin:8px 0 4px;color:var(--fg)}
+.stat .v small{font-size:14px;color:var(--fg-dim);margin-left:4px;font-weight:600}
+.stat .delta{font-family:var(--mono);font-size:10.5px}
+.stat .delta.up{color:var(--ok)}.stat .delta.down{color:var(--danger)}
+.stat .bar{height:4px;background:var(--bg-0);margin-top:12px;overflow:hidden}
+.stat .bar i{display:block;height:100%;background:var(--accent);width:0;transition:width 1.2s cubic-bezier(.2,1,.3,1)}
+.facility{
+  background:var(--panel-dark);border:1px solid var(--line);padding:24px;
+  clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
+}
+.fac-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px}
+.fac-head h3{font-size:16px;font-weight:700;letter-spacing:.2em}
+.fac-head span{font-family:var(--mono);font-size:10px;color:var(--fg-dim);letter-spacing:.25em}
+.fac-row{display:grid;grid-template-columns:150px 1fr 130px 70px;gap:16px;align-items:center;
+  padding:13px 6px;border-bottom:1px dashed var(--line);font-size:13.5px}
+.fac-row:last-child{border-bottom:none}
+.fac-row .en{font-family:var(--mono);font-size:10px;color:var(--fg-dim);display:block;letter-spacing:.15em}
+.fac-row .load{height:8px;background:var(--bg-0);position:relative;overflow:hidden}
+.fac-row .load i{display:block;height:100%;background:linear-gradient(90deg,#7a5410,var(--accent));width:0;transition:width 1.4s cubic-bezier(.2,1,.3,1)}
+.fac-row .load em{position:absolute;inset:0;background:repeating-linear-gradient(-45deg,rgba(0,0,0,.25) 0 6px,transparent 6px 12px)}
+.fac-row .val{font-family:var(--mono);font-size:12px;color:var(--fg-dim);text-align:right}
+.pill{font-family:var(--mono);font-size:10px;letter-spacing:.15em;padding:4px 9px;text-align:center}
+.pill.ok{color:var(--ok);border:1px solid rgba(67,194,104,.45)}
+.pill.warn{color:var(--warn);border:1px solid rgba(255,197,61,.45)}
+.pill.mnt{color:var(--fg-dim);border:1px solid var(--line-2)}
+
+/* —— 组件 —— */
+.comp-group{margin-bottom:34px}
+.comp-group>h3{
+  font-size:15px;font-weight:700;letter-spacing:.24em;margin-bottom:6px;
+  display:flex;align-items:center;gap:12px;
+}
+.comp-group>h3::before{content:"";width:8px;height:8px;background:var(--accent);
+  clip-path:polygon(0 0,100% 0,100% 70%,70% 100%,0 100%)}
+.comp-group>p{font-family:var(--mono);font-size:11px;color:var(--fg-dim);letter-spacing:.1em;margin-bottom:16px}
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.comp-card{
+  background:var(--panel-dark);border:1px solid var(--line);padding:22px;
+  clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
+}
+.comp-card h4{font-size:13px;font-weight:700;letter-spacing:.2em;color:var(--fg-dim);margin-bottom:16px}
+
+.btn{
+  border:none;font-size:14px;font-weight:700;letter-spacing:.22em;text-indent:.22em;
+  padding:13px 26px;position:relative;transition:.2s;
+  clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px);
+}
+.btn-primary{background:var(--accent);color:#161200}
+.btn-primary:hover{background:var(--accent-2);box-shadow:0 0 24px rgba(255,158,27,.35)}
+.btn-ghost{background:transparent;color:var(--fg);box-shadow:inset 0 0 0 1px var(--line-2)}
+.btn-ghost:hover{box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{filter:brightness(1.15);box-shadow:0 0 24px rgba(229,72,77,.35)}
+.btn:disabled{background:var(--bg-2);color:var(--fg-dim);cursor:not-allowed;box-shadow:inset 0 0 0 1px var(--line)}
+.btn-hazard{
+  background:repeating-linear-gradient(-45deg,var(--accent) 0 12px,#191919 12px 24px);
+  color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7);
+}
+.btn-hazard:hover{filter:brightness(1.2);animation:hazPulse .8s linear infinite}
+@keyframes hazPulse{50%{filter:brightness(1.45)}}
+.btn-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+
+/* 开关 */
+.switch-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px dashed var(--line)}
+.switch-row:last-child{border-bottom:none}
+.switch-row .lab{font-size:14px;font-weight:600;letter-spacing:.1em}
+.switch-row .lab small{display:block;font-family:var(--mono);font-size:9.5px;color:var(--fg-dim);letter-spacing:.2em;margin-top:3px;font-weight:400}
+.switch{width:56px;height:28px;background:var(--bg-0);border:1px solid var(--line-2);position:relative;flex:none;transition:.2s}
+.switch i{
+  position:absolute;top:3px;left:3px;width:20px;height:20px;background:var(--fg-dim);
+  transition:.22s cubic-bezier(.2,1.2,.3,1);
+  clip-path:polygon(4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%,0 4px);
+}
+.switch.on{border-color:var(--accent);background:var(--accent-dim)}
+.switch.on i{left:31px;background:var(--accent);box-shadow:0 0 10px rgba(255,158,27,.6)}
+
+/* 滑杆 */
+.range-wrap{padding:6px 0}
+.range-head{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;
+  color:var(--fg-dim);letter-spacing:.2em;margin-bottom:14px}
+.range-head b{color:var(--accent);font-size:15px}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:8px;background:var(--bg-0);
+  outline:none;border:1px solid var(--line);
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:22px;height:22px;background:var(--accent);cursor:grab;
+  clip-path:polygon(5px 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,0 100%,0 5px);
+  box-shadow:0 0 12px rgba(255,158,27,.5);
+}
+.range-marks{display:flex;justify-content:space-between;font-family:var(--mono);
+  font-size:9px;color:var(--fg-dim);margin-top:8px;letter-spacing:.1em}
+
+/* 自检进度 */
+.selftest .st-bar{height:14px;background:var(--bg-0);border:1px solid var(--line);position:relative;overflow:hidden;margin:14px 0 10px}
+.selftest .st-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.selftest .st-bar em{position:absolute;inset:0;background:repeating-linear-gradient(-45deg,rgba(0,0,0,.22) 0 8px,transparent 8px 16px)}
+.st-line{font-family:var(--mono);font-size:11.5px;color:var(--fg-dim);letter-spacing:.1em;min-height:18px}
+.st-line b{color:var(--ok);font-weight:400}
+
+/* 徽章 / 警示条 */
+.badge-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.alertbar{
+  display:flex;gap:12px;align-items:flex-start;padding:13px 16px;margin-bottom:12px;
+  font-size:13px;position:relative;border-left:3px solid;
+  background:var(--bg-2);animation:lnIn .3s ease;
+}
+.alertbar .ic{font-family:var(--mono);font-weight:700;flex:none}
+.alertbar .msg{flex:1;line-height:1.6}
+.alertbar .msg small{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;opacity:.6;margin-top:2px}
+.alertbar .x{background:none;border:none;color:var(--fg-dim);font-size:15px;line-height:1;padding:2px 4px}
+.alertbar .x:hover{color:var(--fg)}
+.alertbar.info{border-color:var(--accent);color:var(--accent-2)}
+.alertbar.warn{border-color:var(--warn);color:var(--warn)}
+.alertbar.danger{border-color:var(--danger);color:#ff8a8e}
+
+/* 色板 */
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.chip{
+  border:1px solid var(--line);background:var(--bg-0);padding:10px;text-align:left;
+  display:flex;gap:10px;align-items:center;transition:.2s;color:var(--fg);
+}
+.chip:hover{border-color:var(--accent);transform:translateY(-2px)}
+.chip .sw{width:30px;height:30px;flex:none;border:1px solid rgba(255,255,255,.14)}
+.chip .nm{font-family:var(--mono);font-size:10px;line-height:1.6;color:var(--fg-dim)}
+.chip .nm b{display:block;color:var(--fg);font-weight:400;letter-spacing:.1em}
+
+/* —— 终端 —— */
+.term-wrap{display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start}
+.term{
+  background:#0c0e10;border:1px solid var(--line);display:flex;flex-direction:column;
+  min-height:480px;clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
+}
+.term-head{
+  display:flex;justify-content:space-between;align-items:center;padding:11px 18px;
+  background:var(--panel-dark);border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--fg-dim);
+}
+.term-head b{color:var(--accent);font-weight:400}
+.term-body{
+  flex:1;padding:16px 18px;font-family:var(--mono);font-size:12.5px;line-height:1.95;
+  overflow-y:auto;min-height:380px;max-height:560px;color:#b9bdc4;
+}
+.term-body .cmd{color:var(--fg)}
+.term-body .cmd::before{content:"admin@zcode:~$ ";color:var(--accent)}
+.term-body .ok{color:var(--ok)}
+.term-body .err{color:var(--danger)}
+.term-body .dim{color:var(--fg-dim)}
+.term-body .acc{color:var(--accent)}
+.term-input-row{
+  display:flex;align-items:center;gap:8px;padding:12px 18px;border-top:1px solid var(--line);
+}
+.term-input-row .pr{font-family:var(--mono);font-size:12.5px;color:var(--accent);flex:none}
+.term-input-row input{
+  flex:1;background:none;border:none;outline:none;color:var(--fg);
+  font-family:var(--mono);font-size:12.5px;caret-color:var(--accent);
+}
+.cmdref{
+  background:var(--panel-dark);border:1px solid var(--line);padding:20px;
+  clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
+}
+.cmdref h4{font-size:13px;font-weight:700;letter-spacing:.22em;color:var(--fg-dim);margin-bottom:14px}
+.cmdref .cr{display:flex;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:12px;align-items:baseline}
+.cmdref .cr:last-child{border:none}
+.cmdref .cr b{font-family:var(--mono);color:var(--accent);font-weight:400;flex:none;min-width:74px}
+.cmdref .cr span{color:var(--fg-dim)}
+
+/* —— 关于 —— */
+.about-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.about-card{
+  background:var(--panel-dark);border:1px solid var(--line);padding:26px;
+  clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
+}
+.about-card h3{font-size:16px;font-weight:700;letter-spacing:.2em;margin-bottom:14px;
+  padding-bottom:12px;border-bottom:1px solid var(--line)}
+.about-card p{font-size:13.5px;line-height:2;color:var(--fg-dim)}
+.about-card p b{color:var(--fg);font-weight:600}
+.kv{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;
+  padding:9px 0;border-bottom:1px dashed var(--line);color:var(--fg-dim)}
+.kv:last-child{border:none}
+.kv b{color:var(--fg);font-weight:400}
+
+/* 页脚 */
+.stage-foot{
+  max-width:1280px;margin:0 auto;padding:22px 24px 34px;
+  display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+  font-family:var(--mono);font-size:10px;letter-spacing:.25em;color:var(--fg-dim);
+}
+.stage-foot .hz{flex:1;max-width:280px;height:8px;opacity:.75}
+
+/* ---------- 十字准星 ---------- */
+.xh{position:fixed;inset:0;pointer-events:none;z-index:90;display:none}
+body.crosshair .xh{display:block}
+.xh .v{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,158,27,.16)}
+.xh .h{position:absolute;left:0;right:0;height:1px;background:rgba(255,158,27,.16)}
+.xh .ro{
+  position:absolute;font-family:var(--mono);font-size:9px;letter-spacing:.2em;
+  color:rgba(255,158,27,.55);transform:translate(14px,14px);white-space:nowrap;
+}
+
+/* ---------- 门扉转场 ---------- */
+.door{position:fixed;inset:0;z-index:200;display:flex;visibility:hidden;pointer-events:none}
+.door.cover{visibility:visible;pointer-events:all}
+.door-half{
+  flex:1;background:var(--bg-2);position:relative;
+  transition:transform .5s cubic-bezier(.65,0,.35,1);
+}
+.door-l{transform:translateX(-101%)}
+.door-r{transform:translateX(101%)}
+.door.cover .door-l,.door.cover .door-r{transform:translateX(0)}
+.door.cover.open .door-l{transform:translateX(-101%);transition:transform .8s cubic-bezier(.77,0,.18,1) .12s}
+.door.cover.open .door-r{transform:translateX(101%);transition:transform .8s cubic-bezier(.77,0,.18,1) .12s}
+.door-l::after,.door-r::after{
+  content:"";position:absolute;top:0;bottom:0;width:8px;
+  background:repeating-linear-gradient(-45deg,var(--accent) 0 10px,transparent 10px 20px);
+}
+.door-l::after{right:0}.door-r::after{left:0}
+.door-flash{
+  position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--accent);
+  transform:translateX(-50%) scaleY(0);box-shadow:0 0 30px 8px rgba(255,158,27,.6);
+}
+.door.cover.open .door-flash{animation:flashOut .5s ease .1s both}
+@keyframes flashOut{
+  0%{transform:translateX(-50%) scaleY(1);opacity:1}
+  100%{transform:translateX(-50%) scaleY(1);opacity:0}
+}
+
+/* ---------- Toast ---------- */
+.toast-box{position:fixed;right:22px;bottom:22px;z-index:300;display:flex;flex-direction:column;gap:10px}
+.toast{
+  background:var(--panel-dark);border:1px solid var(--line-2);border-left:3px solid var(--accent);
+  color:var(--fg);font-size:13px;letter-spacing:.08em;padding:13px 18px;min-width:240px;
+  clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);
+  animation:toastIn .3s cubic-bezier(.2,1.2,.3,1) both;
+}
+.toast small{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.25em;color:var(--fg-dim);margin-top:3px}
+.toast.ok{border-left-color:var(--ok)}
+.toast.err{border-left-color:var(--danger)}
+.toast.out{animation:toastOut .3s ease both}
+@keyframes toastIn{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes toastOut{to{transform:translateX(40px);opacity:0}}
+
+/* ---------- 滚动条 ---------- */
+#main::-webkit-scrollbar,.term-body::-webkit-scrollbar{width:9px}
+#main::-webkit-scrollbar-thumb,.term-body::-webkit-scrollbar-thumb{
+  background:var(--line-2);border:2px solid var(--bg-1)}
+#main::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+/* ---------- 响应式 ---------- */
+@media (max-width:900px){
+  .term-wrap{grid-template-columns:1fr}
+  .fac-row{grid-template-columns:110px 1fr 60px}
+  .fac-row .val{display:none}
+  .hero{flex-direction:column}
+  .hero-visual{display:none}
+  .nav{gap:0}
+  .nav-btn{padding:8px 9px;letter-spacing:.08em}
+  .tb-clock{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= 阶段一 · 开屏 BOOT ================= -->
+<div id="boot" class="screen active">
+  <div class="grid-bg"></div>
+  <div class="vignette"></div>
+  <div class="noise"></div>
+  <div class="scanlines"></div>
+  <div class="boot-inner">
+    <div class="boot-head">
+      <span>ZCODE <b>INDUSTRIAL SYSTEM</b></span>
+      <span>SEC-BOOT / ES-2101</span>
+    </div>
+    <div class="boot-log" id="bootLog"></div>
+    <div class="boot-bar-wrap" id="bootBarWrap">
+      <div class="boot-bar"><i id="bootFill"></i><em></em></div>
+      <div class="boot-pct" id="bootPct">0%</div>
+    </div>
+    <div class="boot-logo" id="bootLogo">
+      <div class="logo-badge">Z</div>
+      <div class="logo-word">ZCODE</div>
+      <div class="logo-sub">INDUSTRIAL OS · ES-2101</div>
+      <div class="hazard-thin" style="width:220px;margin-top:6px"></div>
+    </div>
+    <button class="boot-skip" id="bootSkip">跳过 SKIP ▸▸</button>
+  </div>
+</div>
+
+<!-- ================= 阶段二 · 授权 AUTH ================= -->
+<div id="auth" class="screen">
+  <div class="grid-bg"></div>
+  <div class="auth-floor"></div>
+  <div class="vignette"></div>
+  <div class="noise"></div>
+  <div class="auth-corner tl">ENDFIELD-STYLE UI<br><b>ACCESS NODE // B-07</b></div>
+  <div class="auth-corner tr">信道加密 TLS-X<br><b>延迟 12ms</b></div>
+  <div class="auth-corner bl">未经授权的访问行为<br>将被记录并追责</div>
+  <div class="auth-corner br">PWR <b>▮▮▮▮▯</b> 87%</div>
+
+  <div class="auth-wrap">
+    <div class="auth-card tick-cross" id="authCard">
+      <div class="stripe hazard"></div>
+      <div class="ac-head">
+        <div class="ac-title">访问控制<small>ACCESS CONTROL</small></div>
+        <div class="ac-status"><span class="dot"></span>待授权</div>
+      </div>
+      <div class="ac-ident">
+        <div class="ac-avatar">Z</div>
+        <div>
+          <div class="ac-name">管理员</div>
+          <div class="ac-meta">操作员 ID <b>ZC-0001</b> · 隶属 <b>工业核心部</b><br>
+            最近登录 <b>2026-11-20 23:41</b> · 节点 <b>B-07</b></div>
+          <span class="ac-clear">CLEARANCE L-4</span>
+        </div>
+      </div>
+      <div class="ac-hold">
+        <button class="hold-btn" id="authHold" aria-label="按住以授权">
+          <svg class="ring" viewBox="0 0 120 120">
+            <circle class="ring-bg" cx="60" cy="60" r="52"/>
+            <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="52"/>
+          </svg>
+          <div class="hold-core">
+            <svg class="fp" viewBox="0 0 40 40">
+              <path d="M11 16 a9 9 0 0 1 18 0 v6"/>
+              <path d="M14.5 19 a5.5 5.5 0 0 1 11 0 v9"/>
+              <path d="M18 22 a2 2 0 0 1 4 0 v11"/>
+              <path d="M8 13 a13 13 0 0 1 5-5" opacity=".55"/>
+              <path d="M32 27 a13 13 0 0 1-3 5" opacity=".55"/>
+            </svg>
+            <div class="pct" id="holdPct">READY</div>
+          </div>
+        </button>
+        <div class="hold-label">按住以授权</div>
+        <div class="hold-hint">HOLD TO AUTHORIZE · 1.8s</div>
+      </div>
+      <div class="verify" id="verifyList"></div>
+      <div class="ac-foot"><span class="w"></span>授权过程受工业安全协议 ISA-9 监督</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 阶段三 · 主界面 MAIN ================= -->
+<div id="main" class="screen">
+  <div class="grid-bg" style="position:fixed;opacity:.6"></div>
+  <header class="topbar">
+    <div class="topbar-in">
+      <div class="tb-logo">
+        <div class="tb-mark">Z</div>
+        <div class="tb-name">ZCODE<small>INDUSTRIAL OS</small></div>
+      </div>
+      <nav class="nav" id="navTabs">
+        <button class="nav-btn on" data-tab="overview">概览<small>OVERVIEW</small></button>
+        <button class="nav-btn" data-tab="components">组件<small>COMPONENTS</small></button>
+        <button class="nav-btn" data-tab="terminal">终端<small>TERMINAL</small></button>
+        <button class="nav-btn" data-tab="about">关于<small>ABOUT</small></button>
+      </nav>
+      <div class="tb-right">
+        <button class="snd-btn" id="sndBtn" title="音效开关">
+          <svg viewBox="0 0 24 24" id="sndOnIcon"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>
+        </button>
+        <div class="auth-badge"><i></i>已授权 L-4</div>
+        <div class="tb-clock"><div class="t" id="clockTime">--:--:--</div><div class="d" id="clockDate">----.--.--</div></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="ticker"><div class="ticker-track" id="tickerTrack"></div></div>
+
+  <!-- —— 概览 —— -->
+  <section class="tab-panel on" id="tab-overview">
+    <div class="stage">
+      <div class="hero reveal">
+        <div class="hero-copy">
+          <div class="eyebrow">终末地工业风格主题</div>
+          <h1>秩序，自<em>工业</em>中来</h1>
+          <p>以《明日方舟：终末地》工业美学为蓝本构建的 ZCODE 界面主题：切角面板、警示条纹、双色标识与硬朗的等宽字排印。包含完整开屏引导与授权访问流程。</p>
+          <div class="hero-btns">
+            <button class="btn btn-primary" data-goto-tab="terminal">进入终端</button>
+            <button class="btn btn-ghost" data-goto-tab="components">查看组件库</button>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="hero-ring"></div>
+          <div class="hero-ring2"></div>
+          <div class="hero-core">Z</div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat reveal">
+          <div class="k">系统可用性 UPTIME</div>
+          <div class="v"><span data-count="99.98" data-dec="2">0</span><small>%</small></div>
+          <div class="bar"><i data-w="99"></i></div>
+        </div>
+        <div class="stat reveal">
+          <div class="k">GPU 温度 GPU TEMP</div>
+          <div class="v"><span id="gpuTempVal">--</span><small>°C</small></div>
+          <div class="bar"><i id="gpuTempBar"></i></div>
+        </div>
+        <div class="stat reveal">
+          <div class="k">网络吞吐 THROUGHPUT</div>
+          <div class="v"><span data-count="4.72" data-dec="2">0</span><small>GB/s</small></div>
+          <div class="bar"><i data-w="78"></i></div>
+        </div>
+        <div class="stat reveal">
+          <div class="k">能源储备 ENERGY · <span id="battState">读取中</span></div>
+          <div class="v"><span id="battVal">--</span><small>%</small></div>
+          <div class="bar"><i id="battBar"></i></div>
+        </div>
+      </div>
+
+      <div class="facility reveal tick-cross">
+        <div class="fac-head"><h3>设施状态</h3><span>FACILITY STATUS / 实时</span></div>
+        <div class="fac-row">
+          <div>聚变反应堆 A<span class="en">REACTOR-A</span></div>
+          <div class="load"><i data-w="96"></i><em></em></div>
+          <div class="val">96% · 2.4TW</div>
+          <div class="pill ok">运行中</div>
+        </div>
+        <div class="fac-row">
+          <div>装配线 07<span class="en">ASSEMBLY-07</span></div>
+          <div class="load"><i data-w="73"></i><em></em></div>
+          <div class="val">73% · 412件/h</div>
+          <div class="pill ok">运行中</div>
+        </div>
+        <div class="fac-row">
+          <div>通信塔阵列<span class="en">COMM-ARRAY</span></div>
+          <div class="load"><i data-w="58"></i><em></em></div>
+          <div class="val">58% · 带宽受限</div>
+          <div class="pill warn">降载</div>
+        </div>
+        <div class="fac-row">
+          <div>地下仓储区<span class="en">STORAGE-B</span></div>
+          <div class="load"><i data-w="0"></i><em></em></div>
+          <div class="val">停机 · 例行检修</div>
+          <div class="pill mnt">维护中</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- —— 组件 —— -->
+  <section class="tab-panel" id="tab-components">
+    <div class="stage">
+      <div class="comp-group reveal">
+        <h3>按钮 BUTTONS</h3>
+        <p>切角造型 · 悬停发光 · 警示条纹变体</p>
+        <div class="comp-card">
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnCmd">下发指令</button>
+            <button class="btn btn-hazard" id="btnHazard">危险区操作</button>
+            <button class="btn btn-ghost">幽灵按钮</button>
+            <button class="btn btn-danger" id="btnPurge">清除缓存</button>
+            <button class="btn" disabled>不可用</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="comp-group reveal">
+        <h3>开关与调节 CONTROLS</h3>
+        <p>工业开关 · 功率滑杆（试试「警戒模式」——它会实时切换全站主题变量）</p>
+        <div class="comp-grid">
+          <div class="comp-card">
+            <h4>开关 SWITCHES</h4>
+            <div class="switch-row">
+              <div class="lab">警戒模式<small>ALERT MODE / 切换全局强调色</small></div>
+              <button class="switch" id="swAlert" aria-label="警戒模式"><i></i></button>
+            </div>
+            <div class="switch-row">
+              <div class="lab">信标灯<small>BEACON / 顶部频闪</small></div>
+              <button class="switch on" id="swBeacon" aria-label="信标灯"><i></i></button>
+            </div>
+            <div class="switch-row">
+              <div class="lab">辅助准星<small>CROSSHAIR / 鼠标坐标追踪</small></div>
+              <button class="switch on" id="swCross" aria-label="辅助准星"><i></i></button>
+            </div>
+          </div>
+          <div class="comp-card">
+            <h4>功率输出 POWER</h4>
+            <div class="range-wrap">
+              <div class="range-head"><span>OUTPUT LEVEL</span><b id="powerVal">45%</b></div>
+              <input type="range" id="powerRange" min="0" max="100" value="45">
+              <div class="range-marks"><span>0 · 待机</span><span>50 · 额定</span><span>100 · 过载</span></div>
+            </div>
+          </div>
+          <div class="comp-card selftest">
+            <h4>模块自检 SELF-TEST</h4>
+            <div class="st-bar"><i id="stFill"></i><em></em></div>
+            <div class="st-line" id="stLine">等待启动 — 点击下方按钮开始自检</div>
+            <div style="margin-top:14px"><button class="btn btn-ghost" id="stBtn">开始自检</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="comp-group reveal">
+        <h3>状态与警示 STATUS</h3>
+        <p>状态徽章 · 可关闭的警示条</p>
+        <div class="comp-card">
+          <div class="badge-row">
+            <span class="pill ok">● 运行中</span>
+            <span class="pill warn">● 降载</span>
+            <span class="pill mnt">● 维护中</span>
+            <span class="pill ok">● 在线</span>
+            <span class="pill mnt">● 离线</span>
+          </div>
+          <div id="alertArea">
+            <div class="alertbar info">
+              <span class="ic">[i]</span>
+              <span class="msg">主题包 <b>endfield-industrial v1.0</b> 已就绪<small>THEME LOADED / 0 ERRORS</small></span>
+              <button class="x" data-close>✕</button>
+            </div>
+            <div class="alertbar warn">
+              <span class="ic">[!]</span>
+              <span class="msg">通信塔阵列带宽受限，长途链路可能延迟<small>COMM-ARRAY DEGRADED / CODE 0x2F</small></span>
+              <button class="x" data-close>✕</button>
+            </div>
+            <div class="alertbar danger">
+              <span class="ic">[×]</span>
+              <span class="msg">检测到未签名的第三方组件请求加载<small>UNSIGNED PACKAGE BLOCKED BY ISA-9</small></span>
+              <button class="x" data-close>✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="comp-group reveal">
+        <h3>设计令牌 TOKENS</h3>
+        <p>点击色板复制 HEX 值</p>
+        <div class="comp-card">
+          <div class="chips" id="chips"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- —— 终端 —— -->
+  <section class="tab-panel" id="tab-terminal">
+    <div class="stage">
+      <div class="term-wrap">
+        <div class="term reveal">
+          <div class="term-head"><span><b>ZTERM</b> v2.1 — 会话 #A7C3</span><span>信道已加密 ●</span></div>
+          <div class="term-body" id="termBody"></div>
+          <div class="term-input-row">
+            <span class="pr">admin@zcode:~$</span>
+            <input id="termInput" autocomplete="off" spellcheck="false" placeholder="输入 help 查看可用命令…">
+          </div>
+        </div>
+        <div class="cmdref reveal">
+          <h4>命令速查</h4>
+          <div class="cr"><b>help</b><span>命令列表</span></div>
+          <div class="cr"><b>status</b><span>系统状态摘要</span></div>
+          <div class="cr"><b>scan</b><span>扇区扫描（动画）</span></div>
+          <div class="cr"><b>whoami</b><span>当前操作员</span></div>
+          <div class="cr"><b>theme</b><span>主题信息</span></div>
+          <div class="cr"><b>time</b><span>当前时间</span></div>
+          <div class="cr"><b>echo</b><span>复述输入</span></div>
+          <div class="cr"><b>clear</b><span>清空终端</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- —— 关于 —— -->
+  <section class="tab-panel" id="tab-about">
+    <div class="stage">
+      <div class="about-grid">
+        <div class="about-card reveal" style="grid-column:1/-1">
+          <h3>关于本主题</h3>
+          <p>
+            <b>ZCODE 终末地工业主题</b>是一份致敬《明日方舟：终末地》视觉语言的界面方案。
+            它提取了终末地标志性的设计语汇——<b>浅色切角面板</b>与<b>深色工业底座</b>的强对比、
+            <b>琥珀橙</b>强调色、双语技术标注、警示斜纹与等宽字排印——并将它们重组为一套可交互的 Web 主题。
+            页面包含三个阶段：<b>开屏自检 → 按住授权 → 主操作台</b>，全部在单文件内实现，无任何构建依赖。
+          </p>
+        </div>
+        <div class="about-card reveal">
+          <h3>版本信息</h3>
+          <div class="kv"><span>主题包</span><b>endfield-industrial</b></div>
+          <div class="kv"><span>版本</span><b>v1.0.0</b></div>
+          <div class="kv"><span>构建号</span><b>ES-2101-2611</b></div>
+          <div class="kv"><span>字体</span><b>Rajdhani · Share Tech Mono · Noto Sans SC</b></div>
+          <div class="kv"><span>依赖</span><b>无 · 单文件</b></div>
+        </div>
+        <div class="about-card reveal">
+          <h3>操作</h3>
+          <p style="margin-bottom:16px">想再看一次完整的开屏与授权流程？点击下方按钮重新引导整个系统。</p>
+          <button class="btn btn-primary" id="replayBtn">重播开屏动画 REPLAY</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="stage-foot">
+    <span>ZCODE INDUSTRIAL THEME</span>
+    <div class="hz hazard"></div>
+    <span>INSPIRED BY ARKNIGHTS: ENDFIELD · FAN WORK</span>
+  </footer>
+</div>
+
+<!-- 十字准星 -->
+<div class="xh" id="xh">
+  <div class="v" id="xhV"></div>
+  <div class="h" id="xhH"></div>
+  <div class="ro" id="xhRo">X:0000 Y:0000 // SEC-B2</div>
+</div>
+
+<!-- 门扉转场 -->
+<div class="door" id="door">
+  <div class="door-half door-l"></div>
+  <div class="door-half door-r"></div>
+  <div class="door-flash"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast-box" id="toastBox"></div>
+
+<script>
+/* ============================================================
+   ZCODE INDUSTRIAL THEME — 脚本
+   ============================================================ */
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ---------- 音效（WebAudio 合成，无外部文件） ---------- */
+const SFX={
+  ctx:null,enabled:true,humNodes:null,
+  ensure(){ if(!this.ctx){ try{ this.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(this.ctx&&this.ctx.state==='suspended') this.ctx.resume(); },
+  beep(f=880,dur=.06,type='square',g=.04){
+    if(!this.enabled) return; this.ensure(); if(!this.ctx) return;
+    const t=this.ctx.currentTime,o=this.ctx.createOscillator(),v=this.ctx.createGain();
+    o.type=type;o.frequency.value=f;v.gain.setValueAtTime(g,t);
+    v.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(v).connect(this.ctx.destination);o.start(t);o.stop(t+dur+.02);
+  },
+  tick(){this.beep(1180,.03,'square',.025)},
+  click(){this.beep(520,.05,'square',.05);setTimeout(()=>this.beep(760,.04,'square',.04),40)},
+  err(){this.beep(180,.16,'sawtooth',.06)},
+  ok(){this.beep(660,.09,'triangle',.06);setTimeout(()=>this.beep(880,.1,'triangle',.06),90);setTimeout(()=>this.beep(1320,.16,'triangle',.06),200)},
+  humStart(){
+    if(!this.enabled) return; this.ensure(); if(!this.ctx||this.humNodes) return;
+    const t=this.ctx.currentTime,o=this.ctx.createOscillator(),v=this.ctx.createGain();
+    o.type='sawtooth';o.frequency.setValueAtTime(46,t);
+    o.frequency.linearRampToValueAtTime(120,t+1.8);
+    v.gain.setValueAtTime(.0001,t);v.gain.linearRampToValueAtTime(.05,t+.25);
+    o.connect(v).connect(this.ctx.destination);o.start();
+    this.humNodes={o,v};
+  },
+  humStop(){
+    if(!this.humNodes) return;
+    const {o,v}=this.humNodes,t=this.ctx.currentTime;
+    v.gain.linearRampToValueAtTime(.0001,t+.15);o.stop(t+.2);this.humNodes=null;
+  }
+};
+$('#sndBtn').addEventListener('click',()=>{
+  SFX.enabled=!SFX.enabled;
+  $('#sndBtn').style.color=SFX.enabled?'':'var(--fg-dim)';
+  toast(SFX.enabled?'音效已开启':'音效已静音','SFX '+(SFX.enabled?'ON':'OFF'));
+  if(SFX.enabled) SFX.click();
+});
+
+/* ---------- 屏幕管理 ---------- */
+let currentScreen='boot';
+function showScreen(id){
+  $$('.screen').forEach(s=>s.classList.remove('active'));
+  $('#'+id).classList.add('active');
+  currentScreen=id;
+}
+
+/* ---------- Toast ---------- */
+function toast(msg,sub='',type=''){
+  const box=$('#toastBox'),el=document.createElement('div');
+  el.className='toast '+type;el.textContent=msg;
+  if(sub){const s=document.createElement('small');s.textContent=sub;el.appendChild(s);}
+  box.appendChild(el);
+  setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320)},2600);
+}
+
+/* ============================================================
+   阶段一 · 开屏序列
+   ============================================================ */
+const BOOT_LINES=[
+  ['ZCODE 工业核心固件 v3.7.1 — 自检程序启动',''],
+  ['中央处理器 [ZC-CORE 8×64] ','在线'],
+  ['存储阵列校验 1,024 TB ','通过'],
+  ['主题资源包 endfield-industrial.pkg ','已装载'],
+  ['渲染管线 DirectUI-NG ','就绪'],
+  ['警示条纹发生器 ','校准完成'],
+  ['安全信道 TLS-X ','已建立'],
+  ['操作员身份缓存 ','命中'],
+  ['系统自检完成 — 正在移交访问控制',''],
+];
+let bootSkipped=false,bootDone=false;
+
+function bootLine(html){
+  const ln=document.createElement('div');ln.className='ln';ln.innerHTML=html;
+  $('#bootLog').appendChild(ln);
+}
+function setBootProgress(p){
+  $('#bootFill').style.width=p+'%';
+  $('#bootPct').textContent=Math.round(p)+'%';
+}
+
+async function runBoot(){
+  const step=(100-0)/BOOT_LINES.length;
+  for(let i=0;i<BOOT_LINES.length;i++){
+    if(bootSkipped) return;
+    const [text,st]=BOOT_LINES[i];
+    bootLine(text+(st?`<span class="ok"> ............ [${st}]</span>`:''));
+    setBootProgress((i+1)*step*(100/100)*0.92);
+    SFX.tick();
+    await sleep(200+Math.random()*260);
+  }
+  setBootProgress(96);
+  await sleep(240);
+  if(bootSkipped) return;
+  /* LOGO 阶段 */
+  $('#bootLog').style.display='none';
+  $('#bootBarWrap').style.display='none';
+  $('#bootLogo').classList.add('show');
+  setBootProgress(100);
+  SFX.ok();
+  await sleep(1700);
+  if(bootSkipped) return;
+  finishBoot();
+}
+function finishBoot(){
+  if(bootDone) return; bootDone=true; bootSkipped=true;
+  const b=$('#boot');
+  b.classList.add('glitch-out');
+  setTimeout(()=>{
+    showScreen('auth');
+    SFX.beep(320,.12,'triangle',.05);
+  },420);
+}
+$('#bootSkip').addEventListener('click',()=>{SFX.click();finishBoot();});
+runBoot();
+
+/* ============================================================
+   阶段二 · 授权（按住 1.8s）
+   ============================================================ */
+const HOLD_MS=1800,C=326.73;
+const holdBtn=$('#authHold'),ringFill=$('#ringFill'),holdPct=$('#holdPct');
+let holding=false,authorized=false,holdRAF=null,holdStart=0;
+
+function setRing(p){ ringFill.style.strokeDashoffset=String(C*(1-p)); }
+
+function holdLoop(t){
+  const p=Math.min(1,(t-holdStart)/HOLD_MS);
+  setRing(p); holdPct.textContent=Math.round(p*100)+'%';
+  if(p>=1){ completeAuth(); return; }
+  holdRAF=requestAnimationFrame(holdLoop);
+}
+holdBtn.addEventListener('pointerdown',e=>{
+  if(authorized) return;
+  holding=true;
+  try{holdBtn.setPointerCapture(e.pointerId)}catch(_){}
+  holdStart=performance.now();
+  holdBtn.classList.add('scanning');
+  SFX.humStart();
+  holdRAF=requestAnimationFrame(holdLoop);
+});
+function cancelHold(){
+  if(!holding||authorized) return;
+  holding=false;
+  cancelAnimationFrame(holdRAF);
+  SFX.humStop();
+  holdBtn.classList.remove('scanning');
+  /* 回退动画 */
+  ringFill.style.transition='stroke-dashoffset .3s ease';
+  setRing(0); holdPct.textContent='READY';
+  setTimeout(()=>ringFill.style.transition='',320);
+  toast('授权中断','HOLD RELEASED — 已重置','err');
+  SFX.err();
+}
+window.addEventListener('pointerup',cancelHold);
+window.addEventListener('pointercancel',cancelHold);
+
+const VERIFY_LINES=[
+  ['生物特征采样','有效'],
+  ['权限级别核验','L-4 通过'],
+  ['访问令牌签发','AC-7F3A9C2E'],
+  ['授权确认','欢迎回来，管理员'],
+];
+async function completeAuth(){
+  authorized=true;holding=false;
+  cancelAnimationFrame(holdRAF);
+  SFX.humStop();
+  holdBtn.classList.remove('scanning');
+  holdBtn.classList.add('granted');
+  holdPct.textContent='✓ OK';
+  setRing(1);
+  SFX.ok();
+  await sleep(500);
+  /* 逐条打印核验信息 */
+  const v=$('#verifyList');v.classList.add('show');
+  for(const [k,st] of VERIFY_LINES){
+    const isTok=st.startsWith('AC-');
+    const ln=document.createElement('div');ln.className='ln';
+    ln.innerHTML=`&gt; ${k} <span class="ok">............ [</span>${isTok?`<span class="tok">${st}</span>`:`<span class="ok">${st}</span>`}<span class="ok">]</span>`;
+    v.appendChild(ln);SFX.tick();
+    await sleep(340);
+  }
+  await sleep(650);
+  /* 门扉转场 → 主界面 */
+  await doorTransition(()=>{
+    showScreen('main');
+    document.body.classList.add('crosshair');
+    startMain();
+  });
+}
+
+/* ---------- 门扉转场 ---------- */
+function doorTransition(swap){
+  return new Promise(res=>{
+    const d=$('#door');
+    d.classList.add('cover');
+    SFX.beep(140,.3,'sawtooth',.05);
+    setTimeout(()=>{
+      swap&&swap();
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        d.classList.add('open');
+        SFX.ok();
+        setTimeout(()=>{d.classList.remove('cover','open');res();},1000);
+      }));
+    },520);
+  });
+}
+
+/* ============================================================
+   阶段三 · 主界面
+   ============================================================ */
+let mainStarted=false;
+function startMain(){
+  if(mainStarted) return; mainStarted=true;
+  startClock();buildTicker();bindTabs();bindComponents();bindTerminal();bindCrosshair();
+  pollStats();setInterval(pollStats,3000);
+  requestAnimationFrame(()=>{
+    $$('#tab-overview .reveal').forEach((el,i)=>{
+      setTimeout(()=>el.classList.add('in'),90*i+80);
+    });
+    /* 数字滚动与进度条 */
+    setTimeout(()=>{
+      $$('#tab-overview [data-count]').forEach(el=>{
+        animateCount(el,parseFloat(el.dataset.count),parseInt(el.dataset.dec||'0'));
+      });
+      $$('#tab-overview .bar i, #tab-overview .load i').forEach(el=>{
+        if(el.dataset.w!=null) el.style.width=el.dataset.w+'%';
+      });
+    },350);
+  });
+}
+
+/* —— 真实硬件数据:GPU 温度 / 电池电量(由 stats_server.py 的 /api/stats 提供) —— */
+function pollStats(){
+  fetch('/api/stats',{cache:'no-store'}).then(r=>r.json()).then(d=>{
+    const t=$('#gpuTempVal'),tb=$('#gpuTempBar'),b=$('#battVal'),bb=$('#battBar'),st=$('#battState');
+    if(!t||!b) return;
+    if(d.gpuTemp!=null){
+      t.textContent=Math.round(d.gpuTemp);
+      tb.style.width=Math.min(100,Math.max(0,d.gpuTemp))+'%';
+    }else{
+      t.textContent='N/A';
+      tb.style.width='0%';
+    }
+    if(d.batteryPercent!=null){
+      b.textContent=d.batteryPercent;
+      bb.style.width=d.batteryPercent+'%';
+      st.textContent=d.charging?'充电中':(d.acOnline?'接通电源':'使用电池');
+    }else{
+      b.textContent='N/A';
+      bb.style.width='0%';
+      st.textContent='无电池';
+    }
+  }).catch(()=>{
+    const t=$('#gpuTempVal'),b=$('#battVal'),st=$('#battState');
+    if(t) t.textContent='--';
+    if(b) b.textContent='--';
+    if(st) st.textContent='离线';
+  });
+}
+
+/* 时钟 */
+function startClock(){
+  const WD=['日','一','二','三','四','五','六'];
+  const upd=()=>{
+    const n=new Date(),p=v=>String(v).padStart(2,'0');
+    $('#clockTime').textContent=`${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
+    $('#clockDate').textContent=`${n.getFullYear()}.${p(n.getMonth()+1)}.${p(n.getDate())} 周${WD[n.getDay()]}`;
+  };
+  upd();setInterval(upd,1000);
+}
+
+/* Ticker */
+function buildTicker(){
+  const words=['SYS:OK','T-412.7K','PRESS 98.2ATM','LINK ▮▮▮▮▯','ES-2101','ZC-CORE 8×64',
+    'FLUX 1.24e3','HULL 100%','Ω 55.3','COOLANT NOMINAL','ARM SEQ 04','B-07 ONLINE',
+    'VOLT 12.4kV','SYNC ▲','MASS 8.2t','ISA-9 ACTIVE','LAT 44.2N','DRIFT 0.03'];
+  const pick=()=>words[Math.random()*words.length|0];
+  let s='';
+  for(let i=0;i<26;i++) s+=`<span>${pick()} <b>//</b> 0x${(Math.random()*0xFFFF|0).toString(16).toUpperCase().padStart(4,'0')}</span>`;
+  $('#tickerTrack').innerHTML=s+s; /* 双份实现无缝循环 */
+}
+
+/* Tabs */
+function switchTab(name){
+  $$('.nav-btn').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
+  $$('.tab-panel').forEach(p=>p.classList.toggle('on',p.id==='tab-'+name));
+  SFX.click();
+  const sec=$('#tab-'+name);
+  sec.querySelectorAll('.reveal').forEach((el,i)=>setTimeout(()=>el.classList.add('in'),60*i+40));
+  if(name==='terminal') setTimeout(()=>$('#termInput').focus(),120);
+}
+function bindTabs(){
+  $$('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+  $$('[data-goto-tab]').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.gotoTab)));
+}
+
+/* 数字滚动 */
+function animateCount(el,target,dec){
+  const t0=performance.now(),dur=1300;
+  const step=t=>{
+    const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);
+    el.textContent=(target*e).toFixed(dec);
+    if(p<1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+/* 组件交互 */
+function bindComponents(){
+  $('#btnCmd').addEventListener('click',()=>{SFX.click();toast('指令已下发至工业核心','CMD DISPATCHED · ACK 12ms','ok');});
+  $('#btnHazard').addEventListener('click',()=>{SFX.err();toast('危险区操作需二级确认','HAZARD ZONE — CONFIRMATION REQUIRED','err');});
+  $('#btnPurge').addEventListener('click',()=>{SFX.click();toast('缓存已清除','312 MB FREED');});
+
+  /* 开关 */
+  const bindSwitch=(id,cb,init)=>{const el=$('#'+id);if(init)el.classList.add('on');
+    el.addEventListener('click',()=>{el.classList.toggle('on');SFX.click();cb&&cb(el.classList.contains('on'));});};
+  bindSwitch('swAlert',on=>{
+    document.body.classList.toggle('alert-mode',on);
+    toast(on?'警戒模式已启用 · 强调色切换为红色':'警戒模式已解除',on?'ALERT MODE ENGAGED':'ALERT MODE DISENGAGED',on?'err':'ok');
+  });
+  bindSwitch('swBeacon',on=>{
+    document.querySelector('.ticker').style.animation=on?'':'none';
+    document.querySelector('.ticker-track').style.animationPlayState=on?'running':'paused';
+    toast(on?'信标灯开启':'信标灯关闭','BEACON '+(on?'ON':'OFF'));
+  },true);
+  bindSwitch('swCross',on=>{
+    document.body.classList.toggle('crosshair',on);
+    toast(on?'辅助准星开启':'辅助准星关闭','AUX CROSSHAIR');
+  },true);
+
+  /* 功率滑杆 */
+  const pr=$('#powerRange');
+  pr.addEventListener('input',()=>{
+    const v=+pr.value;
+    $('#powerVal').textContent=v+'%';
+    pr.style.background=`linear-gradient(90deg,var(--accent) ${v}%,var(--bg-0) ${v}%)`;
+  });
+  pr.dispatchEvent(new Event('input'));
+
+  /* 自检 */
+  let stBusy=false;
+  $('#stBtn').addEventListener('click',async()=>{
+    if(stBusy) return; stBusy=true; SFX.click();
+    const fill=$('#stFill'),line=$('#stLine');
+    const steps=[[18,'链路握手 …'],[42,'校验模块签名 …'],[66,'扫描寄存器 …'],[88,'自检汇总 …'],[100,'']];
+    fill.style.width='0%';
+    for(const [p,msg] of steps){
+      fill.style.transition='width .45s ease';fill.style.width=p+'%';
+      line.innerHTML=msg?msg+'':'';
+      SFX.tick();
+      await sleep(500);
+    }
+    line.innerHTML='自检完成 <b>—— 5 / 5 模块正常，0 错误</b>';
+    SFX.ok();toast('模块自检通过','SELF-TEST PASSED · 5/5','ok');
+    stBusy=false;
+  });
+
+  /* 警示条关闭 */
+  $$('#alertArea [data-close]').forEach(x=>x.addEventListener('click',()=>{
+    x.closest('.alertbar').remove();SFX.click();
+  }));
+
+  /* 色板 */
+  const palette=[
+    ['--accent','工业橙','#ff9e1b'],['--accent-2','亮琥珀','#ffb84d'],
+    ['--panel','浅面板','#eceae4'],['--panel-dark','深面板','#22262c'],
+    ['--bg-0','底黑','#0b0c0e'],['--ok','运行绿','#43c268'],
+    ['--warn','警示黄','#ffc53d'],['--danger','危险红','#e5484d'],
+  ];
+  const chips=$('#chips');
+  palette.forEach(([v,n,hex])=>{
+    const c=document.createElement('button');c.className='chip';
+    c.innerHTML=`<span class="sw" style="background:${hex}"></span><span class="nm"><b>${n}</b>${hex} · var(${v})</span>`;
+    c.addEventListener('click',async()=>{
+      try{await navigator.clipboard.writeText(hex);}catch(_){}
+      SFX.click();toast(`已复制 ${hex}`,n+' / '+v);
+    });
+    chips.appendChild(c);
+  });
+
+  /* 重播 */
+  $('#replayBtn').addEventListener('click',()=>{SFX.click();setTimeout(()=>location.reload(),150);});
+}
+
+/* ---------- 终端 ---------- */
+function termPrint(html,cls=''){
+  const d=document.createElement('div');if(cls)d.className=cls;d.innerHTML=html;
+  $('#termBody').appendChild(d);
+  $('#termBody').scrollTop=$('#termBody').scrollHeight;
+  return d;
+}
+async function typeLine(text,cls=''){
+  const d=termPrint('',cls);
+  for(let i=0;i<text.length;i++){
+    d.textContent+=text[i];
+    $('#termBody').scrollTop=$('#termBody').scrollHeight;
+    await sleep(7);
+  }
+  return d;
+}
+function bindTerminal(){
+  termPrint('ZTERM v2.1 — ZCODE 工业核心终端','dim');
+  termPrint('会话已建立 · 信道 TLS-X 加密 · 输入 <span class="acc">help</span> 查看命令','dim');
+  termPrint('&nbsp;');
+
+  const CMDS={
+    help(){
+      termPrint('可用命令：','dim');
+      termPrint('  status   系统状态摘要');
+      termPrint('  scan     扇区扫描（动画）');
+      termPrint('  whoami   当前操作员');
+      termPrint('  theme    主题信息');
+      termPrint('  time     当前时间');
+      termPrint('  echo     复述输入');
+      termPrint('  clear    清空终端');
+    },
+    status(){
+      termPrint('系统状态 <span class="acc">SUMMARY</span>');
+      termPrint('  核心温度      62.5°C   <span class="ok">正常</span>');
+      termPrint('  能源储备      87%      <span class="ok">充电中</span>');
+      termPrint('  网络吞吐      4.72GB/s <span class="ok">正常</span>');
+      termPrint('  通信塔阵列    降载 58% <span style="color:var(--warn)">受限</span>');
+      termPrint('  活动告警      2 条');
+    },
+    async scan(){
+      const d=termPrint('','');
+      for(let i=0;i<=100;i+=4){
+        const bar='▮'.repeat(Math.round(i/5)).padEnd(20,'▯');
+        d.innerHTML=`扇区扫描 ${bar} ${String(i).padStart(3)}%`;
+        $('#termBody').scrollTop=$('#termBody').scrollHeight;
+        await sleep(46);
+      }
+      d.innerHTML=`扇区扫描 <span class="ok">完成</span> — 检查 4,096 单元 · 异常 0 · 已自动修复 0`;
+      SFX.ok();
+    },
+    whoami(){
+      termPrint('管理员 (ADMIN) · ID ZC-0001 · 权限 L-4');
+      termPrint('隶属：工业核心部 · 当前节点 B-07','dim');
+    },
+    theme(){
+      termPrint('当前主题：<span class="acc">endfield-industrial v1.0</span>');
+      termPrint('设计语汇：切角面板 / 警示条纹 / 双语标注 / 琥珀橙','dim');
+      termPrint('灵感来源：ARKNIGHTS: ENDFIELD（致敬同人作品）','dim');
+    },
+    time(){
+      termPrint(new Date().toLocaleString('zh-CN',{hour12:false}));
+    },
+    clear(){
+      $('#termBody').innerHTML='';
+    },
+    sudo(){
+      termPrint('<span class="err">权限不足：此终端已处于最高权限。</span>');
+    },
+  };
+
+  $('#termInput').addEventListener('keydown',async e=>{
+    if(e.key!=='Enter') return;
+    const raw=e.target.value.trim();e.target.value='';
+    if(!raw) return;
+    termPrint(raw,'cmd');SFX.tick();
+    const [cmd,...rest]=raw.split(/\s+/);
+    if(CMDS[cmd]) await CMDS[cmd](rest.join(' '));
+    else if(cmd==='echo') termPrint(rest.join(' ')||'&nbsp;');
+    else{
+      termPrint(`未知命令：${cmd} — 输入 <span class="acc">help</span> 查看可用命令`,'err');
+      SFX.err();
+    }
+    termPrint('&nbsp;');
+  });
+}
+
+/* ---------- 十字准星 ---------- */
+function bindCrosshair(){
+  if(!matchMedia('(pointer:fine)').matches){document.body.classList.remove('crosshair');return;}
+  const v=$('#xhV'),h=$('#xhH'),ro=$('#xhRo');
+  document.addEventListener('pointermove',e=>{
+    v.style.transform=`translateX(${e.clientX}px)`;
+    h.style.transform=`translateY(${e.clientY}px)`;
+    ro.style.left=e.clientX+'px';ro.style.top=e.clientY+'px';
+    ro.textContent=`X:${String(e.clientX).padStart(4,'0')} Y:${String(e.clientY).padStart(4,'0')} // SEC-B2`;
+  },{passive:true});
+}
+
+/* ---------- 调试钩子（用于预览各阶段） ---------- */
+window.__goto=phase=>{
+  if(phase==='auth'){bootSkipped=true;showScreen('auth');}
+  if(phase==='main'){bootSkipped=true;showScreen('main');document.body.classList.add('crosshair');startMain();}
+};
+</script>
+</body>
+</html>

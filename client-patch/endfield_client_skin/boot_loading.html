@@ -1,0 +1,194 @@
+<div id="loading" hidden></div>
+      <div id="efx-loading" role="status" aria-busy="true" aria-label="Loading...">
+      <button class="efx-skip" id="efx-skip">跳过 SKIP ▸</button>
+      <div class="efx-stage">
+        <div class="efx-meta">
+          <span>ZCODE <b>INDUSTRIAL SYSTEM</b></span>
+          <span>SEC-BOOT / ES-2101 · <span class="efx-clock" id="efx-clock">--:--:--</span></span>
+        </div>
+        <div class="efx-body">
+          <section class="efx-sg on" data-sg="boot">
+            <div class="efx-core">
+              <div class="efx-badge">{{SVG}}</div>
+              <div class="efx-word">ZCODE</div>
+              <div class="efx-sub">INDUSTRIAL OS · SEC-BOOT</div>
+            </div>
+            <div class="efx-bar"><i id="efx-fill"></i><em></em></div>
+            <div class="efx-log" id="efx-log"></div>
+          </section>
+          <section class="efx-sg" data-sg="access">
+            <div class="efx-h1">需要访问许可</div>
+            <div class="efx-h2">ACCESS PERMISSION REQUIRED</div>
+            <button class="efx-btn" type="button" data-advance>授予访问权限 <span>GRANT ACCESS</span></button>
+            <div class="efx-hint">按 <kbd>Enter</kbd> / <kbd>Space</kbd>,或点击按钮继续</div>
+          </section>
+          <section class="efx-sg" data-sg="identity">
+            <div class="efx-h1">身份资料确认</div>
+            <div class="efx-h2">IDENTITY VERIFICATION</div>
+            <div class="efx-kv">
+              <div><span>身份名称</span><b>ADMIN</b></div>
+              <div><span>身份编号</span><b>ZC-0001</b></div>
+              <div><span>权限等级</span><b>L-4</b></div>
+            </div>
+            <button class="efx-btn" type="button" data-advance>确认身份 <span>CONFIRM IDENTITY</span></button>
+            <div class="efx-hint">按 <kbd>Enter</kbd> / <kbd>Space</kbd>,或点击按钮继续</div>
+          </section>
+          <section class="efx-sg" data-sg="read">
+            <div class="efx-h1">开始读取权限</div>
+            <div class="efx-h2">PERMISSION READ STARTED</div>
+            <div class="efx-hex" id="efx-hex"></div>
+          </section>
+          <section class="efx-sg" data-sg="verify">
+            <div class="efx-ring">
+              <svg viewBox="0 0 200 200" aria-hidden="true">
+                <circle class="rf" cx="100" cy="100" r="92"/>
+                <circle class="ri" cx="100" cy="100" r="58"/>
+                <circle class="rd" cx="100" cy="100" r="74"/>
+              </svg>
+              <i class="efx-dot d1"></i>
+              <i class="efx-dot d2"></i>
+              <i class="efx-dot d3"></i>
+              <div class="efx-ring-t">读取完毕 · 核验通过</div>
+              <div class="efx-ring-s">READ COMPLETE · VERIFIED</div>
+            </div>
+          </section>
+          <section class="efx-sg" data-sg="welcome">
+            <div class="efx-w1">WELCOME TO</div>
+            <div class="efx-w2">ZCODE INDUSTRIAL OS</div>
+            <div class="efx-badge efx-badge-sm">{{SVG}}</div>
+            <div class="efx-w3">欢迎回来 · 操作员 ADMIN</div>
+          </section>
+        </div>
+        <div class="efx-foot">
+          <span>[ <b id="efx-step">01</b> / 06 ] <span id="efx-sname">BOOT</span></span>
+          <span class="efx-hz"></span>
+          <span id="efx-status">SEC-BOOT RUNNING</span>
+          <span>POWERED BY ZCODE</span>
+        </div>
+      </div>
+      <script>
+      (function () {
+        var body = document.body;
+        if (body.classList.contains('efx-hold')) return;
+        body.classList.add('efx-hold');
+
+        var groups = [].slice.call(document.querySelectorAll('#efx-loading .efx-sg'));
+        var stepEl = document.getElementById('efx-step');
+        var nameEl = document.getElementById('efx-sname');
+        var statusEl = document.getElementById('efx-status');
+        var clockEl = document.getElementById('efx-clock');
+        var log = document.getElementById('efx-log');
+        var fill = document.getElementById('efx-fill');
+        var hexBox = document.getElementById('efx-hex');
+        var timer = null, hexTimer = null, idx = 0, finished = false;
+
+        var META = [
+          { auto: 2400, name: 'BOOT',     status: 'SEC-BOOT RUNNING' },
+          { auto: 15000, name: 'ACCESS',   status: 'AWAITING OPERATOR CONSENT · 等待操作员授权' },
+          { auto: 15000, name: 'IDENTITY', status: 'MATCHING OPERATOR RECORD · 核对身份资料' },
+          { auto: 1900, name: 'READ',     status: 'READING PERMISSION SET · 读取权限,建立会话通道' },
+          { auto: 2300, name: 'VERIFY',   status: 'PERMISSION AUTHORIZED · 读取完毕,核验通过' },
+          { auto: 1800, name: 'WELCOME',  status: 'IDENTITY VERIFIED · SESSION ESTABLISHED · 身份验证完成,会话已建立' }
+        ];
+
+        var LOG_LINES = [
+          ['ZCODE 工业核心固件 — 自检程序启动', ''],
+          ['中央处理器 [ZC-CORE] ', '在线'],
+          ['主题资源包 endfield-industrial.pkg ', '已装载'],
+          ['渲染管线 DirectUI-NG ', '就绪'],
+          ['安全信道 TLS-X ', '已建立'],
+          ['系统自检完成 — 等待操作员接入', '']
+        ];
+
+        function pad(n) { return (n < 10 ? '0' : '') + n; }
+        function tickClock() {
+          if (!clockEl) return;
+          var n = new Date();
+          clockEl.textContent = pad(n.getHours()) + ':' + pad(n.getMinutes()) + ':' + pad(n.getSeconds());
+        }
+        tickClock();
+        var clockTimer = setInterval(tickClock, 1000);
+
+        function addLine(text, st) {
+          if (!log) return;
+          var d = document.createElement('div');
+          d.innerHTML = '&gt; ' + text + (st ? ' ............ [<b>' + st + '</b>]' : '');
+          log.appendChild(d);
+          while (log.children.length > 6) log.removeChild(log.firstChild);
+        }
+
+        function startHex() {
+          if (!hexBox) return;
+          hexTimer = setInterval(function () {
+            var line = '';
+            for (var i = 0; i < 24; i++) {
+              line += ((Math.random() * 256) | 0).toString(16).toUpperCase().padStart(2, '0') + ' ';
+            }
+            var d = document.createElement('div');
+            d.textContent = line;
+            hexBox.appendChild(d);
+            while (hexBox.children.length > 9) hexBox.removeChild(hexBox.firstChild);
+          }, 90);
+        }
+        function stopHex() { if (hexTimer) { clearInterval(hexTimer); hexTimer = null; } }
+
+        function show(i) {
+          idx = i;
+          var m = META[i];
+          groups.forEach(function (el, k) { el.classList.toggle('on', k === i); });
+          if (stepEl) stepEl.textContent = pad(i + 1);
+          if (nameEl) nameEl.textContent = m.name;
+          if (statusEl) statusEl.textContent = m.status;
+          if (m.name === 'READ') startHex(); else stopHex();
+          clearTimeout(timer);
+          timer = setTimeout(next, m.auto);
+        }
+
+        function next() {
+          if (finished) return;
+          if (idx + 1 < groups.length) show(idx + 1); else finish();
+        }
+
+        function finish() {
+          if (finished) return;
+          finished = true;
+          clearTimeout(timer);
+          clearInterval(clockTimer);
+          stopHex();
+          if (fill) fill.style.width = '100%';
+          body.classList.add('efx-boot-done');
+          /* 淡出完成后把整个覆盖层从 DOM 移除:拖拽区/层级/指针事件全部彻底消失 */
+          window.setTimeout(function () {
+            var o = document.getElementById('efx-loading');
+            if (o && o.parentNode) o.parentNode.removeChild(o);
+          }, 900);
+        }
+
+        window.addEventListener('keydown', function (e) {
+          if (finished) return;
+          if (e.key === 'Escape') { e.preventDefault(); finish(); return; }
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); next(); }
+        });
+        [].slice.call(document.querySelectorAll('#efx-loading [data-advance]')).forEach(function (btn) {
+          btn.addEventListener('click', function () { if (!finished) next(); });
+        });
+        var skip = document.getElementById('efx-skip');
+        if (skip) skip.addEventListener('click', finish);
+
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
+
+        show(0);
+        var li = 0;
+        var logTimer = setInterval(function () {
+          if (finished) { clearInterval(logTimer); return; }
+          if (li < LOG_LINES.length) {
+            addLine(LOG_LINES[li][0], LOG_LINES[li][1]);
+            li++;
+            if (li === LOG_LINES.length && fill) fill.style.width = '100%';
+          } else {
+            clearInterval(logTimer);
+          }
+        }, 300);
+      })();
+      </script>
+    </div>

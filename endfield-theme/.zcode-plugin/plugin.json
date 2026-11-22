@@ -1,0 +1,8 @@
+{
+  "name": "endfield-theme",
+  "version": "1.0.1",
+  "description": "Endfield industrial-style ZCode theme page with live GPU temperature and battery stats",
+  "author": { "name": "aurora" },
+  "skills": "./skills",
+  "commands": "./commands"
+}

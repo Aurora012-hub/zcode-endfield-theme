@@ -1,0 +1,188 @@
+<!-- EFX-HUD-START -->
+<style id="efx-hud-style">
+      #efx-hud {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483000;
+        pointer-events: none;
+        font-family: 'Cascadia Code', Consolas, 'Courier New', monospace;
+      }
+
+      #efx-hud .efx-xv {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 1px;
+        background: rgba(255, 158, 27, 0.14);
+        will-change: transform;
+      }
+
+      #efx-hud .efx-xh {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 1px;
+        background: rgba(255, 158, 27, 0.14);
+        will-change: transform;
+      }
+
+      #efx-hud .efx-ro {
+        position: fixed;
+        left: 0;
+        top: 0;
+        font-size: 9px;
+        letter-spacing: 0.18em;
+        color: rgba(255, 158, 27, 0.7);
+        white-space: nowrap;
+        transform: translate(14px, 16px);
+      }
+
+      #efx-hud .efx-stat {
+        position: fixed;
+        right: 16px;
+        bottom: 14px;
+        font-size: 10.5px;
+        line-height: 1.9;
+        letter-spacing: 0.12em;
+        color: rgba(224, 221, 214, 0.74);
+        text-align: right;
+      }
+
+      #efx-hud .efx-stat b {
+        color: #ff9e1b;
+        font-weight: 400;
+      }
+
+      #efx-hud .efx-dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #43c268;
+        box-shadow: 0 0 6px rgba(67, 194, 104, 0.7);
+        margin-right: 8px;
+      }
+
+      body.efx-hud-off #efx-hud { display: none; }
+
+      /* 自定义准星鼠标指针(全元素统一,热点居中) */
+      html, body, * {
+        cursor: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Ccircle cx='13' cy='13' r='8.5' fill='none' stroke='%23ff9e1b' stroke-width='1.5' opacity='0.95'/%3E%3Ccircle cx='13' cy='13' r='2' fill='%23ff9e1b'/%3E%3Cpath d='M13 0v5M13 21v5M0 13h5M21 13h5' stroke='%23ff9e1b' stroke-width='1.5'/%3E%3C/svg%3E") 13 13, auto !important;
+      }
+
+      /* 对话背景:极淡工业网格(常驻,不挡任何内容) */
+      #efx-hud .efx-grid {
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 158, 27, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 158, 27, 0.05) 1px, transparent 1px);
+        background-size: 44px 44px;
+      }
+    </style>
+    <div id="efx-hud" aria-hidden="true">
+      <div class="efx-grid"></div>
+      <div class="efx-xv" id="efx-xv"></div>
+      <div class="efx-xh" id="efx-xh"></div>
+      <div class="efx-ro" id="efx-ro">X:0000 Y:0000 // SEC-B2</div>
+      <div class="efx-stat">
+        <div><span class="efx-dot" id="efx-link"></span>GPU <b id="efx-gpu">--</b> · <span id="efx-gpu-name">LINK STANDBY</span></div>
+        <div>PWR <b id="efx-bat">--</b> · <span id="efx-pwr">--</span></div>
+        <div><b id="efx-time">--:--:--</b> · <span id="efx-date">----.--.--</span></div>
+      </div>
+    </div>
+    <script>
+    (function () {
+      var xv = document.getElementById('efx-xv');
+      var xh = document.getElementById('efx-xh');
+      var ro = document.getElementById('efx-ro');
+      var gpuEl = document.getElementById('efx-gpu');
+      var gpuName = document.getElementById('efx-gpu-name');
+      var batEl = document.getElementById('efx-bat');
+      var pwrEl = document.getElementById('efx-pwr');
+      var linkEl = document.getElementById('efx-link');
+      var timeEl = document.getElementById('efx-time');
+      var dateEl = document.getElementById('efx-date');
+
+      /* —— 十字准星随鼠标 —— */
+      window.addEventListener('pointermove', function (e) {
+        if (xv) xv.style.transform = 'translateX(' + e.clientX + 'px)';
+        if (xh) xh.style.transform = 'translateY(' + e.clientY + 'px)';
+        if (ro) {
+          ro.style.left = e.clientX + 'px';
+          ro.style.top = e.clientY + 'px';
+          ro.textContent = 'X:' + String(e.clientX).padStart(4, '0') + ' Y:' +
+            String(e.clientY).padStart(4, '0') + ' // SEC-B2';
+        }
+      }, { passive: true });
+
+      /* —— 时钟 —— */
+      function pad(n) { return (n < 10 ? '0' : '') + n; }
+      function tick() {
+        if (!timeEl) return;
+        var n = new Date();
+        timeEl.textContent = pad(n.getHours()) + ':' + pad(n.getMinutes()) + ':' + pad(n.getSeconds());
+        dateEl.textContent = n.getFullYear() + '.' + pad(n.getMonth() + 1) + '.' + pad(n.getDate());
+      }
+      tick();
+      setInterval(tick, 1000);
+
+      /* —— 电量兜底:浏览器 Battery API(数据服务离线时使用) —— */
+      var batFallback = null;
+      if (navigator.getBattery) {
+        navigator.getBattery().then(function (b) {
+          batFallback = b;
+          var upd = function () {
+            if (gpuEl && gpuEl.textContent === '--') {
+              batEl.textContent = Math.round(b.level * 100);
+              pwrEl.textContent = b.charging ? 'CHARGING' : (b.dischargingTime === Infinity ? 'ON BATTERY' : 'ON BATTERY');
+            }
+          };
+          b.addEventListener('levelchange', upd);
+          b.addEventListener('chargingchange', upd);
+          upd();
+        }).catch(function () {});
+      }
+
+      /* —— 硬件数据轮询(本地 8642 服务) —— */
+      function poll() {
+        fetch('http://127.0.0.1:8642/api/stats', { cache: 'no-store' })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (linkEl) linkEl.style.background = '#43c268';
+            if (d.gpuTemp != null) {
+              gpuEl.textContent = Math.round(d.gpuTemp) + '°C';
+              gpuName.textContent = d.gpuName || 'GPU';
+            } else {
+              gpuEl.textContent = 'N/A';
+              gpuName.textContent = 'GPU SENSOR OFFLINE';
+            }
+            if (d.batteryPercent != null) {
+              batEl.textContent = d.batteryPercent + '%';
+              pwrEl.textContent = d.charging ? 'CHARGING' : (d.acOnline ? 'AC POWER' : 'ON BATTERY');
+            } else if (batFallback) {
+              batEl.textContent = Math.round(batFallback.level * 100) + '%';
+            } else {
+              batEl.textContent = 'N/A';
+              pwrEl.textContent = 'NO BATTERY';
+            }
+          })
+          .catch(function () {
+            if (linkEl) linkEl.style.background = '#e5484d';
+            if (gpuName) gpuName.textContent = 'LINK OFFLINE · RUN STATS_SERVER';
+          });
+      }
+      poll();
+      setInterval(poll, 3000);
+
+      /* —— Ctrl+Alt+X 显隐 HUD —— */
+      window.addEventListener('keydown', function (e) {
+        if (e.ctrlKey && e.altKey && (e.key === 'X' || e.key === 'x')) {
+          document.body.classList.toggle('efx-hud-off');
+        }
+      });
+    })();
+    </script>
+<!-- EFX-HUD-END -->

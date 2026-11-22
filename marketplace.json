@@ -1,0 +1,17 @@
+{
+  "name": "endfield-market",
+  "plugins": [
+    {
+      "name": "endfield-theme",
+      "source": "./endfield-theme",
+      "version": "1.0.1",
+      "description": "Endfield industrial-style ZCode theme page with live GPU temperature and battery stats",
+      "displayName": "Endfield Industrial Theme",
+      "displayName_i18n": { "zh-CN": "终末地工业主题" },
+      "description_i18n": {
+        "zh-CN": "终末地工业风格主题页:开屏自检动画、按住授权交互、主操作台,概览页实时读取 GPU 温度与电池电量,附带本地数据服务。"
+      },
+      "category": "other"
+    }
+  ]
+}

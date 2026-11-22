@@ -1,0 +1,464 @@
+html,
+      body,
+      #root {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      #root {
+        opacity: 0;
+        transition: opacity 0.16s ease;
+      }
+
+      body.zcode-startup-ready #root {
+        opacity: 1;
+      }
+
+      /* ===== ZCODE ENDFIELD INDUSTRIAL BOOT SKIN v3(多阶段 + 交互) ===== */
+      #efx-loading {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483647;
+        transition: opacity 0.5s ease 0.15s;
+        background:
+          radial-gradient(1100px 620px at 86% -10%, rgba(255, 158, 27, 0.09), transparent 62%),
+          radial-gradient(900px 520px at -8% 110%, rgba(255, 158, 27, 0.06), transparent 60%),
+          linear-gradient(180deg, #14161c 0%, #0d0e11 100%);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-app-region: no-drag;
+        app-region: no-drag;
+        user-select: none;
+      }
+
+      /* 淡出由 JS 主导:多阶段序列完成(efx-boot-done)且应用就绪后才淡出 */
+      body.zcode-startup-ready.efx-boot-done #efx-loading {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* 兜底:内联脚本失效时 45s 后强制放行,避免卡死 */
+      body.efx-hold:not(.efx-boot-done) #efx-loading {
+        animation: efx-forcefade 45s linear forwards;
+      }
+
+      @keyframes efx-forcefade {
+        0%, 88% { opacity: 1; }
+        100% { opacity: 0; pointer-events: none; }
+      }
+
+      #efx-loading::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 158, 27, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 158, 27, 0.05) 1px, transparent 1px);
+        background-size: 44px 44px;
+      }
+
+      #efx-loading::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          repeating-linear-gradient(0deg, transparent 0 3px, rgba(0, 0, 0, 0.12) 3px 4px),
+          radial-gradient(120% 90% at 50% 40%, transparent 45%, rgba(0, 0, 0, 0.5) 100%);
+      }
+
+      .efx-skip {
+        position: absolute;
+        top: 18px;
+        right: 22px;
+        z-index: 3;
+        background: none;
+        border: 1px solid #3a3f47;
+        color: #8b8e95;
+        font-family: 'Cascadia Code', Consolas, monospace;
+        font-size: 9.5px;
+        letter-spacing: 0.3em;
+        padding: 6px 12px;
+        cursor: pointer;
+        transition: 0.18s;
+      }
+
+      .efx-skip:hover { color: #ff9e1b; border-color: #ff9e1b; }
+
+      .efx-stage {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        width: min(860px, 94vw);
+        height: min(660px, 94vh);
+        padding: 20px 26px;
+        font-family: 'Cascadia Code', Consolas, 'Courier New', monospace;
+      }
+
+      .efx-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        letter-spacing: 0.28em;
+        color: #8b8e95;
+        border-bottom: 1px solid #2c3037;
+        padding-bottom: 12px;
+      }
+
+      .efx-meta b { color: #ff9e1b; font-weight: 400; }
+      .efx-clock { color: #ff9e1b; }
+
+      .efx-body { flex: 1; position: relative; }
+
+      .efx-sg {
+        position: absolute;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        text-align: center;
+        animation: efx-stagein 0.35s ease both;
+      }
+
+      .efx-sg.on { display: flex; }
+
+      @keyframes efx-stagein {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: none; }
+      }
+
+      .efx-core {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        animation: efx-stamp 0.55s cubic-bezier(0.2, 1.4, 0.3, 1) both;
+      }
+
+      @keyframes efx-stamp {
+        0% { transform: scale(1.5); opacity: 0; }
+        62% { transform: scale(0.98); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+
+      .efx-badge {
+        position: relative;
+        width: 104px;
+        height: 104px;
+        background: #eceae4;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+        box-shadow: 0 0 60px rgba(255, 158, 27, 0.25);
+      }
+
+      .efx-badge::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 24px;
+        height: 24px;
+        background: linear-gradient(225deg, #ff9e1b 50%, transparent 50%);
+      }
+
+      .efx-badge svg { width: 58px; height: auto; color: #17181b; }
+
+      .efx-badge-sm { width: 74px; height: 74px; }
+      .efx-badge-sm svg { width: 42px; }
+      .efx-badge-sm::after { width: 16px; height: 16px; }
+
+      .efx-word {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: 0.34em;
+        text-indent: 0.34em;
+        color: #d9d7d1;
+      }
+
+      .efx-sub {
+        font-size: 9px;
+        letter-spacing: 0.5em;
+        text-indent: 0.5em;
+        color: #ff9e1b;
+      }
+
+      .efx-bar {
+        position: relative;
+        width: 340px;
+        max-width: 80vw;
+        height: 8px;
+        background: #1a1d22;
+        border: 1px solid #2c3037;
+        overflow: hidden;
+      }
+
+      .efx-bar i {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, #ff9e1b, #ffb84d);
+        box-shadow: 0 0 12px rgba(255, 158, 27, 0.5);
+        transition: width 0.25s ease;
+      }
+
+      .efx-bar em {
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.22) 0 8px, transparent 8px 16px);
+        animation: efx-stripe 0.9s linear infinite;
+      }
+
+      @keyframes efx-stripe { to { background-position: 22.6px 0; } }
+
+      .efx-log {
+        width: 100%;
+        min-height: 108px;
+        font-size: 11px;
+        line-height: 1.85;
+        letter-spacing: 0.06em;
+        color: #8b8e95;
+        text-align: left;
+      }
+
+      .efx-log b { color: #43c268; font-weight: 400; }
+
+      .efx-h1 {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-size: clamp(30px, 4.6vw, 46px);
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-indent: 0.14em;
+        color: #eceae4;
+      }
+
+      .efx-h2 {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 11px;
+        letter-spacing: 0.42em;
+        text-indent: 0.42em;
+        color: #8b8e95;
+        margin-top: -6px;
+      }
+
+      .efx-h2::before,
+      .efx-h2::after {
+        content: "";
+        width: 56px;
+        height: 1px;
+        background: #3a3f47;
+      }
+
+      .efx-btn {
+        font-family: 'Cascadia Code', Consolas, monospace;
+        margin-top: 12px;
+        background: transparent;
+        color: #eceae4;
+        border: 1px solid #3a3f47;
+        padding: 13px 24px;
+        font-size: 14px;
+        letter-spacing: 0.16em;
+        cursor: pointer;
+        transition: 0.18s;
+        clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+      }
+
+      .efx-btn span { color: #ff9e1b; margin-left: 6px; transition: 0.18s; }
+
+      .efx-btn:hover,
+      .efx-btn:focus-visible {
+        background: #ff9e1b;
+        color: #17181b;
+        border-color: #ff9e1b;
+        outline: none;
+        box-shadow: 0 0 24px rgba(255, 158, 27, 0.35);
+      }
+
+      .efx-btn:hover span,
+      .efx-btn:focus-visible span { color: #17181b; }
+
+      .efx-hint {
+        font-size: 10.5px;
+        color: #6d727c;
+        letter-spacing: 0.08em;
+      }
+
+      .efx-hint kbd {
+        border: 1px solid #3a3f47;
+        padding: 1px 6px;
+        margin: 0 2px;
+        color: #8b8e95;
+        font-size: 10px;
+        font-family: inherit;
+      }
+
+      .efx-kv { min-width: 320px; margin-top: 4px; }
+
+      .efx-kv > div {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 8px 2px;
+        border-bottom: 1px solid #2c3037;
+        font-size: 12.5px;
+      }
+
+      .efx-kv span { color: #6d727c; letter-spacing: 0.2em; }
+      .efx-kv b { color: #eceae4; font-weight: 600; letter-spacing: 0.12em; }
+
+      .efx-hex {
+        position: absolute;
+        right: 0;
+        top: 8%;
+        width: 320px;
+        height: 158px;
+        overflow: hidden;
+        font-size: 8.5px;
+        line-height: 1.75;
+        color: #565c66;
+        text-align: right;
+        opacity: 0.85;
+      }
+
+      .efx-hex div { white-space: pre; }
+
+      .efx-ring {
+        position: relative;
+        width: min(360px, 68vw);
+        aspect-ratio: 1;
+        display: grid;
+        place-items: center;
+      }
+
+      .efx-ring svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+      }
+
+      .efx-ring .rf {
+        fill: none;
+        stroke: #d9d7d1;
+        stroke-width: 3.5;
+        stroke-dasharray: 578;
+        stroke-dashoffset: 578;
+        animation: efx-draw 1.4s cubic-bezier(0.3, 0, 0.2, 1) forwards;
+      }
+
+      .efx-ring .ri {
+        fill: none;
+        stroke: #ff9e1b;
+        stroke-width: 2;
+        opacity: 0.9;
+        stroke-dasharray: 200 365;
+        stroke-linecap: butt;
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: efx-spin 2.6s linear infinite;
+      }
+
+      .efx-ring .rd {
+        fill: none;
+        stroke: #2c3037;
+        stroke-width: 1;
+        stroke-dasharray: 4 8;
+      }
+
+      @keyframes efx-draw { to { stroke-dashoffset: 0; } }
+      @keyframes efx-spin { to { transform: rotate(360deg); } }
+
+      .efx-dot {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #ff9e1b;
+        box-shadow: 0 0 8px rgba(255, 158, 27, 0.6);
+      }
+
+      .efx-dot.d1 { top: 26%; left: 38%; }
+      .efx-dot.d2 { top: 40%; right: 24%; width: 6px; height: 6px; }
+      .efx-dot.d3 { bottom: 30%; left: 55%; width: 6px; height: 6px; opacity: 0.7; }
+
+      .efx-ring-t {
+        position: relative;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-size: clamp(20px, 3vw, 30px);
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        color: #eceae4;
+        border-bottom: 1px solid #3a3f47;
+        padding: 0 18px 6px;
+      }
+
+      .efx-ring-s {
+        position: relative;
+        font-size: 9.5px;
+        letter-spacing: 0.4em;
+        color: #8b8e95;
+      }
+
+      .efx-w1 {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-size: clamp(26px, 4vw, 42px);
+        font-weight: 800;
+        letter-spacing: 0.22em;
+        text-indent: 0.22em;
+        color: #eceae4;
+      }
+
+      .efx-w2 {
+        background: #ff9e1b;
+        color: #17181b;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-indent: 0.14em;
+        font-size: clamp(15px, 2.4vw, 22px);
+        padding: 7px 20px;
+        clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        box-shadow: 0 0 40px rgba(255, 158, 27, 0.3);
+      }
+
+      .efx-w3 { font-size: 11.5px; letter-spacing: 0.3em; color: #8b8e95; }
+
+      .efx-foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        border-top: 1px solid #2c3037;
+        padding-top: 12px;
+        font-size: 9.5px;
+        letter-spacing: 0.22em;
+        color: #565c66;
+        white-space: nowrap;
+      }
+
+      .efx-foot b { color: #ff9e1b; font-weight: 400; }
+
+      .efx-hz {
+        flex: 1;
+        height: 6px;
+        opacity: 0.7;
+        background: repeating-linear-gradient(-45deg, #ff9e1b 0 10px, #141414 10px 20px);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .efx-core { animation: none; }
+        .efx-bar em { animation: none; }
+        .efx-ring .rf { animation: none; stroke-dashoffset: 0; }
+        .efx-ring .ri { animation: none; }
+        .efx-sg { animation: none; }
+      }
+      /* ===== /ENDFIELD BOOT SKIN v3 ===== */

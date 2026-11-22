@@ -1,0 +1,86 @@
+/* ============================================================
+   ZCODE ENDFIELD INDUSTRIAL SKIN v1.0 — 界面覆盖层
+   灵感:明日方舟:终末地 | 恢复方式:运行 endfield-restore.cmd
+   原理:重映射暗色主题的中性灰阶与品牌/强调/边框语义变量
+   ============================================================ */
+
+/* ---------- 暗色主题:工业灰阶 ---------- */
+.dark,
+.theme-zai-dark {
+  --color-neutral-950: #0d0e11;
+  --color-neutral-900: #16191f;
+  --color-neutral-800: #20242b;
+  --color-neutral-700: #272c34;
+  --color-neutral-600: #31363f;
+  --color-neutral-500: #404651;
+  --color-neutral-400: #5c626d;
+  --color-neutral-300: #70767f;
+  --color-neutral-200: #ddd9d2;
+  --color-neutral-100: #eceae4;
+  --color-neutral-50: #f4f2ec;
+
+  /* 品牌与强调 → 工业橙 */
+  --color-brand: #ff9e1b;
+  --color-accent: rgba(255, 158, 27, 0.16);
+
+  /* 边框 → 工业线框 */
+  --color-border: #343a44;
+  --color-border-hover: #404651;
+  --color-input-border-focused: #ff9e1b;
+  --color-resize-handle: #343a44;
+
+  /* 查找高亮 → 琥珀 */
+  --color-find-highlight: rgba(255, 158, 27, 0.24);
+  --color-find-highlight-active: rgba(255, 158, 27, 0.42);
+
+  /* 悬停表面 → 橙色微光 */
+  --color-surface-hover: rgba(255, 158, 27, 0.09);
+
+  --zcode-scrollbar-thumb: #31363f;
+}
+
+/* ---------- 亮色主题:终末地纸面板 ---------- */
+:root,
+:host {
+  --color-neutral-50: #f4f2ec;
+  --color-neutral-100: #eceae4;
+  --color-neutral-200: #e2dfd7;
+  --color-brand: #b06f00;
+  --color-accent: rgba(166, 106, 0, 0.12);
+  --color-input-border-focused: #b06f00;
+  --color-find-highlight: rgba(176, 111, 0, 0.18);
+  --color-find-highlight-active: rgba(176, 111, 0, 0.34);
+}
+
+/* ---------- 全局细节 ---------- */
+::selection {
+  background: #ff9e1b;
+  color: #141414;
+}
+
+.dark ::selection,
+.theme-zai-dark ::selection {
+  background: #ff9e1b;
+  color: #141414;
+}
+
+/* 滚动条悬停点亮工业橙 */
+.dark *::-webkit-scrollbar-thumb:hover,
+.theme-zai-dark *::-webkit-scrollbar-thumb:hover {
+  background: #ff9e1b !important;
+}
+
+/* ---------- 深色底色锁定(终末地底色 + 橙色氛围光) ---------- */
+html.dark body,
+body.dark,
+html.theme-zai-dark body,
+body.theme-zai-dark,
+html:has(body.dark),
+html:has(body.theme-zai-dark) {
+  background:
+    radial-gradient(1100px 600px at 88% -12%, rgba(255, 158, 27, 0.07), transparent 62%),
+    radial-gradient(900px 520px at -8% 108%, rgba(255, 158, 27, 0.05), transparent 60%),
+    linear-gradient(180deg, #13161b 0%, #0d0e11 100%) !important;
+}
+
+/* ---------- /ENDFIELD INDUSTRIAL SKIN ---------- */
